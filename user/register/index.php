@@ -1,8 +1,5 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-
+// register
 header("Content-Type: application/json; charset=utf-8");
 header("X-Powered-By: Express");
 header("Access-Control-Allow-Origin: *");
@@ -32,10 +29,6 @@ function uuidv4() {
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
-function generateRecoveryCode(): string {
-    return str_pad((string) random_int(0, 9999999999), 10, '0', STR_PAD_LEFT);
-}
-
 $username = $data['username'] ?? null;
 
 if (!$username) {
@@ -46,6 +39,49 @@ if (!$username) {
         ]
     ]);
     exit;
+}
+
+
+
+// Check if recovery code exists
+$stmt = $pdo->prepare("SELECT id, recovery_code_hash FROM users LIMIT 1");
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (password_verify($username, $user["recovery_code_hash"])) {
+$code = $user["recovery_code_hash"];
+// Check to make sure code exists
+$stmt = $pdo->prepare("SELECT * FROM users WHERE recovery_code_hash = ?");
+$stmt->execute([$code]);
+$user = $stmt->fetch();
+
+$player_id = $user['player_id'];
+
+// output the response
+$response = json_encode([
+    "secret" => $user['secret']
+], JSON_UNESCAPED_SLASHES);
+
+$etag = 'W/"' . md5($response) . '"';
+
+header("ETag: $etag");
+
+// output response
+echo $response;
+exit;
+}
+
+if (!password_verify($username, $user["recovery_code_hash"])) {
+// if passes the recovery code check then only accept certain characters.
+if (preg_match('/^[a-zA-Z]+$/', $username)) {
+} else {
+	http_response_code(400);
+	echo json_encode([
+        "error" => [
+            "code" => "USERNAME_INVALID"
+        ]
+    ]);
+	exit;
 }
 
 // Check if username exists
@@ -66,7 +102,6 @@ if ($userExists) {
 $player_avatar_ids = $data['player_avatar_ids'];
 $avatar = $data['player_avatar_ids'][0];
 $avatarJson = json_encode($player_avatar_ids);
-$recover_code = generateRecoveryCode();
 $secret = uuidv4();
 $player_id = uuidv4();
 $owned_morty_id = uuidv4();
@@ -75,10 +110,10 @@ $owned_morty_idJson = json_encode([$owned_morty_id]);
 do {
     try {	
         $stmt_1 = $pdo->prepare("
-            INSERT INTO users (recover_code, secret, player_id, username, player_avatar_id, level, xp, streak, active_deck_id, decks_owned, tags, xp_lower, xp_upper)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (secret, player_id, username, player_avatar_id, level, xp, streak, active_deck_id, decks_owned, tags, xp_lower, xp_upper)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
-		$stmt_1->execute([$recover_code, $secret, $player_id, $username, $avatar, '1', '27', '0', '0', '3', '[]', '27', '64']);
+		$stmt_1->execute([$secret, $player_id, $username, $avatar, '1', '27', '0', '0', '3', '[]', '27', '64']);
 		
 		
 		$stmt_2 = $pdo->prepare("
@@ -133,6 +168,7 @@ do {
         }
     }
 } while (!$success);
+}
 
 // Grab data right after register
 $stmt = $pdo->prepare("SELECT * FROM users WHERE player_id = ?");
@@ -200,9 +236,6 @@ $response = json_encode([
 $etag = 'W/"' . md5($response) . '"';
 
 header("ETag: $etag");
-
-// if we ever need it to error out
-//echo $username;
 
 // output response
 echo $response;

@@ -2,14 +2,28 @@ RewriteEngine On
 
 #Options -Indexes
 
-#RewriteRule ^ccpa-link-redirector/?$ https://support.conspiracyrick.com/ [R=301,L]
-
 # Disable Apache's automatic slash redirect for this path
 DirectorySlash Off
 
 RewriteCond %{HTTP:X-Forwarded-Proto} =https
 # debug
 #RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Internally rewrite /linkaccount to /linkaccount/
+RewriteCond %{REQUEST_URI} ^/linkaccount$
+RewriteRule ^linkaccount$ /linkaccount/ [L]
+
+# Internally rewrite /inappdeletion/request-account-deletion to /inappdeletion/request-account-deletion/
+RewriteCond %{REQUEST_URI} ^/inappdeletion/request-account-deletion$
+RewriteRule ^inappdeletion/request-account-deletion$ /inappdeletion/request-account-deletion/ [L]
+
+# Internally rewrite /session/collect-pickup to /session/collect-pickup/
+RewriteCond %{REQUEST_URI} ^/session/collect-pickup$
+RewriteRule ^session/collect-pickup$ /session/collect-pickup/ [L]
+
+# Internally rewrite /session/battle-boss to /session/battle-boss/
+RewriteCond %{REQUEST_URI} ^/session/battle-boss$
+RewriteRule ^session/battle-boss$ /session/battle-boss/ [L]
 
 # Internally rewrite /session/emote/room to /session/emote/room/
 RewriteCond %{REQUEST_URI} ^/session/emote/room$
@@ -182,6 +196,10 @@ RewriteRule ^session/battle-bot$ /session/battle-bot/ [L]
 # Internally rewrite /session/battle/ready to /session/battle/ready/
 RewriteCond %{REQUEST_URI} ^/session/battle/ready$
 RewriteRule ^session/battle/ready$ /session/battle/ready/ [L]
+
+# Internally rewrite /sp/gacha-info to /sp/gacha-info/
+RewriteCond %{REQUEST_URI} ^/sp/gacha-info$
+RewriteRule ^sp/gacha-info$ /sp/gacha-info/ [L]
 
 <Files "manifest.json">
     ForceType application/octet-stream
