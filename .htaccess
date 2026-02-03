@@ -11,14 +11,20 @@ RewriteCond %{HTTP:X-Forwarded-Proto} =https
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5befc7c (can now initiate battles)
 # Internally rewrite /session/battle-wild-morty to /session/battle-wild-morty/
 RewriteCond %{REQUEST_URI} ^/session/battle-wild-morty$
 RewriteRule ^session/battle-wild-morty$ /session/battle-wild-morty/ [L]
 
+<<<<<<< HEAD
 =======
 >>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 =======
 >>>>>>> 3b76ad9 (pickup items (locally only), emote, events now stored in db)
+=======
+>>>>>>> 5befc7c (can now initiate battles)
 # Internally rewrite /linkaccount to /linkaccount/
 RewriteCond %{REQUEST_URI} ^/linkaccount$
 RewriteRule ^linkaccount$ /linkaccount/ [L]
@@ -209,14 +215,20 @@ RewriteRule ^session/battle/ready$ /session/battle/ready/ [L]
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5befc7c (can now initiate battles)
 # Internally rewrite /session/battle/move to /session/battle/move/
 RewriteCond %{REQUEST_URI} ^/session/battle/move$
 RewriteRule ^session/battle/move$ /session/battle/move/ [L]
 
+<<<<<<< HEAD
 =======
 >>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 =======
 >>>>>>> 3b76ad9 (pickup items (locally only), emote, events now stored in db)
+=======
+>>>>>>> 5befc7c (can now initiate battles)
 # Internally rewrite /sp/gacha-info to /sp/gacha-info/
 RewriteCond %{REQUEST_URI} ^/sp/gacha-info$
 RewriteRule ^sp/gacha-info$ /sp/gacha-info/ [L]

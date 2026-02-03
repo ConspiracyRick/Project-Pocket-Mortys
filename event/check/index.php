@@ -2,6 +2,7 @@
 // event/check  (raid test publisher)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 3b76ad9 (pickup items (locally only), emote, events now stored in db)
@@ -10,12 +11,15 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 >>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
+=======
+>>>>>>> 5befc7c (can now initiate battles)
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
 
 require __DIR__ . "/../../pocket_f4894h398r8h9w9er8he98he.php";
 require_once __DIR__ . "/../../lib/events.php";
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 $REQUIRE_SECRET = false;
@@ -31,6 +35,8 @@ if ($REQUIRE_SECRET) {
 }
 
 >>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
+=======
+>>>>>>> 5befc7c (can now initiate battles)
 // Read body
 $raw  = file_get_contents("php://input");
 $body = json_decode($raw, true);
