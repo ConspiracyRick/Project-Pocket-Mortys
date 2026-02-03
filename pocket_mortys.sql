@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
+<<<<<<< HEAD
 -- Generation Time: Feb 03, 2026 at 06:40 PM
+=======
+-- Generation Time: Feb 03, 2026 at 09:46 AM
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 -- Server version: 10.3.39-MariaDB-0ubuntu0.20.04.2
 -- PHP Version: 7.4.3-4ubuntu2.24
 
@@ -74,7 +78,11 @@ CREATE TABLE `events` (
 --
 
 INSERT INTO `events` (`id`, `raid_event_id`, `shard_id`, `current_state`, `world_id`, `spawn_location`, `boss_id`, `asset_id`, `threat_lvl`, `total_damage`, `initial_health`, `max_health_bars`, `event_state_next_timestamp`, `has_ran`, `permit_start`, `permit_buy_in`, `ticket_buy_in`) VALUES
+<<<<<<< HEAD
 (1, 'RaidBossKillerAsteroid_2025', '78496e72-fb88-11f0-b2fd-8b24d97da62f', 'active', 1, '37,58', 'killer_asteroid', 'RaidBossKillerAsteroid', 10, 0, 30860800, 60275, '2026-03-09 12:57:33', 0, '50', '1', '0');
+=======
+(1, 'RaidBossKillerAsteroid_2025', '78496e72-fb88-11f0-b2fd-8b24d97da62f', 'none', 1, '37,58', 'killer_asteroid', 'RaidBossKillerAsteroid', 10, 0, 30860800, 60275, '2026-03-09 12:57:33', 0, '50', '1', '0');
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 
 -- --------------------------------------------------------
 
@@ -185,7 +193,11 @@ INSERT INTO `event_queue` (`id`, `room_id`, `event_name`, `payload_json`, `picku
 (86, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:wild-morty-added', '{\"morty_id\":\"MortyBlueShirt\",\"placement\":[32,39],\"state\":\"WORLD\",\"division\":1,\"variant\":\"Normal\",\"shiny_if_potion\":false,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"wild_morty_id\":\"b091ed8a-24aa-4174-a9d1-50963e3e9b77\"}', NULL, NULL, '2026-02-01 09:11:59'),
 (87, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:wild-morty-added', '{\"morty_id\":\"MortyNoEye\",\"placement\":[46,26],\"state\":\"WORLD\",\"division\":1,\"variant\":\"Normal\",\"shiny_if_potion\":false,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"wild_morty_id\":\"deacd4ab-9067-4af1-b94e-c5a17c9755b0\"}', NULL, NULL, '2026-02-01 09:11:59'),
 (88, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:wild-morty-added', '{\"morty_id\":\"MortyDefault\",\"placement\":[60,11],\"state\":\"WORLD\",\"division\":2,\"variant\":\"Normal\",\"shiny_if_potion\":false,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"wild_morty_id\":\"db74e2e4-e3d4-437f-b72a-85a6e613962f\"}', NULL, NULL, '2026-02-01 09:11:59'),
+<<<<<<< HEAD
 (89, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:wild-morty-added', '{\"morty_id\":\"MortySurvivor\",\"placement\":[25,8],\"state\":\"WORLD\",\"division\":3,\"variant\":\"Shiny\",\"shiny_if_potion\":false,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"wild_morty_id\":\"9f0439f6-9b89-4dc1-96d6-1f1f461d1681\"}', NULL, NULL, '2026-02-01 09:11:59'),
+=======
+(89, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:wild-morty-added', '{\"morty_id\":\"MortySurvivor\",\"placement\":[2,32],\"state\":\"WORLD\",\"division\":3,\"variant\":\"Shiny\",\"shiny_if_potion\":false,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"wild_morty_id\":\"9f0439f6-9b89-4dc1-96d6-1f1f461d1681\"}', NULL, NULL, '2026-02-01 09:11:59'),
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 (90, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:wild-morty-added', '{\"morty_id\":\"MortyDefault\",\"placement\":[27,12],\"state\":\"WORLD\",\"division\":1,\"variant\":\"Shiny\",\"shiny_if_potion\":false,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"wild_morty_id\":\"fc1463f0-cc0b-45f1-b36f-7a7b7273d500\"}', NULL, NULL, '2026-02-01 09:11:59'),
 (91, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:bot-added', '{\"username\":\"Carpedge\",\"player_avatar_id\":\"AvatarTeacherRick\",\"state\":\"WORLD\",\"level\":5,\"owned_morties\":[{\"morty_id\":\"MortyAndroid\",\"variant\":\"Normal\",\"hp\":1,\"owned_morty_id\":\"80700000-0000-0000-0000-000000000000\"}],\"zone\":{\"player\":[3,1],\"bots\":{\"count\":7,\"morty_count\":{\"min\":1,\"max\":1},\"morty_hp_handicap\":{\"min\":0.4,\"max\":0.6}},\"zone_id\":\"[3-1]\"},\"streak\":0,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"bot_id\":\"457237f9-257f-4ee0-ae9f-707a1ba19ed9\"}', NULL, NULL, '2026-02-01 09:11:59'),
 (92, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:bot-added', '{\"username\":\"EasementJustice\",\"player_avatar_id\":\"AvatarRickDefault\",\"state\":\"WORLD\",\"level\":5,\"owned_morties\":[{\"morty_id\":\"MortyPoorHouse\",\"variant\":\"Normal\",\"hp\":1,\"owned_morty_id\":\"80700000-0000-0000-0000-000000000000\"}],\"zone\":{\"player\":[2,4],\"bots\":{\"count\":8,\"morty_count\":{\"min\":1,\"max\":1},\"morty_hp_handicap\":{\"min\":0.4,\"max\":0.6}},\"zone_id\":\"[2-4]\"},\"streak\":0,\"_created\":\"2026-02-01T09:11:59.000Z\",\"_updated\":\"2026-02-01T09:11:59.000Z\",\"bot_id\":\"1253a8bb-03f2-4e58-b001-29391e8af6f3\"}', NULL, NULL, '2026-02-01 09:11:59'),
@@ -388,6 +400,7 @@ INSERT INTO `event_queue` (`id`, `room_id`, `event_name`, `payload_json`, `picku
 (287, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:pickup-added', '{\"contents\":[{\"type\":\"ITEM\",\"amount\":1,\"item_id\":\"ItemTinCan\",\"rarity\":5}],\"placement\":[78,68],\"pickup_id\":\"15e0f14e-40ca-48b4-9a6a-4054e75dca18\"}', '15e0f14e-40ca-48b4-9a6a-4054e75dca18', NULL, '2026-02-03 14:02:11'),
 (288, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:user-added', '{\"player_id\":\"f8a69ceb-1ef8-4d0b-81dc-d6d59e425163\",\"username\":\"ConspiracyRick\",\"player_avatar_id\":\"AvatarRickDefault\",\"level\":1,\"owned_morties\":[{\"owned_morty_id\":\"a3e20258-48f8-4602-af17-ad0348c2fbcb\",\"morty_id\":\"MortyDefault\",\"hp\":20,\"variant\":\"Normal\",\"is_locked\":false,\"is_trading_locked\":false,\"fight_pit_id\":null}],\"state\":\"WORLD\"}', NULL, NULL, '2026-02-03 14:08:02'),
 (289, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:pickup-removed', '{\"pickup_id\":\"dcfebbfb-30b9-4f0d-b3ee-d0e9168fe606\"}', 'dcfebbfb-30b9-4f0d-b3ee-d0e9168fe606', NULL, '2026-02-03 14:12:01'),
+<<<<<<< HEAD
 (290, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:pickup-added', '{\"contents\":[{\"type\":\"ITEM\",\"amount\":1,\"item_id\":\"ItemCable\",\"rarity\":75}],\"placement\":[60,73],\"pickup_id\":\"0a068839-f86d-4ea9-9769-cb22fbe0b265\"}', '0a068839-f86d-4ea9-9769-cb22fbe0b265', NULL, '2026-02-03 14:12:02'),
 (291, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:user-added', '{\"player_id\":\"f8a69ceb-1ef8-4d0b-81dc-d6d59e425163\",\"username\":\"ConspiracyRick\",\"player_avatar_id\":\"AvatarRickDefault\",\"level\":1,\"owned_morties\":[{\"owned_morty_id\":\"a3e20258-48f8-4602-af17-ad0348c2fbcb\",\"morty_id\":\"MortyDefault\",\"hp\":20,\"variant\":\"Normal\",\"is_locked\":false,\"is_trading_locked\":false,\"fight_pit_id\":null}],\"state\":\"WORLD\"}', NULL, NULL, '2026-02-03 18:05:15'),
 (292, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'shard:raid-boss-state-changed', '{\"raid_event_id\":\"RaidBossKillerAsteroid_2025\",\"shard_id\":\"78496e72-fb88-11f0-b2fd-8b24d97da62f\",\"current_state\":\"active\",\"world_id\":1,\"spawn_location\":\"37,58\",\"boss_id\":\"killer_asteroid\",\"asset_id\":\"RaidBossKillerAsteroid\",\"threat_lvl\":10,\"total_damage\":\"0\",\"initial_health\":30860800,\"max_health_bars\":60275,\"event_state_next_timestamp\":\"2026-03-09 08:57:33\",\"has_ran\":false,\"permit_start\":50,\"permit_buy_in\":1,\"ticket_buy_in\":0}', NULL, NULL, '2026-02-03 18:05:15'),
@@ -540,6 +553,9 @@ INSERT INTO `event_queue` (`id`, `room_id`, `event_name`, `payload_json`, `picku
 (437, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'battle:turn-result', '{\"battle_id\":\"4fbf8d20-9765-42c2-85cb-084f3ac885a2\",\"outcome\":\"RUN\",\"turn_datas\":[{\"type\":\"ATTACK\",\"attacker_player_id\":\"f8a69ceb-1ef8-4d0b-81dc-d6d59e425163\",\"defender_player_id\":\"317D0000-0000-0000-0000-000000000001\",\"attack_id\":null,\"element_modifier\":1,\"effect_datas\":[{\"type\":\"Stat\",\"is_accurate\":true,\"to_self\":true,\"stat\":\"Attack\",\"amount\":1},{\"type\":\"Stat\",\"is_accurate\":true,\"to_self\":true,\"stat\":\"Defence\",\"amount\":3}],\"attacker_morty_datas\":[{\"owned_morty_id\":\"a3e20258-48f8-4602-af17-ad0348c2fbcb\",\"owned_attacks\":[{\"attack_id\":null,\"pp\":null}]}]},{\"type\":\"ATTACK\",\"attacker_player_id\":\"317D0000-0000-0000-0000-000000000001\",\"defender_player_id\":\"f8a69ceb-1ef8-4d0b-81dc-d6d59e425163\",\"attack_id\":\"AttackDoze\",\"element_modifier\":1,\"effect_datas\":[{\"type\":\"Stat\",\"is_accurate\":true,\"to_self\":false,\"stat\":\"Accuracy\",\"amount\":-3}],\"attacker_morty_datas\":[{\"owned_morty_id\":\"00000000-0000-0000-0000-000000000002\",\"owned_attacks\":[{\"attack_id\":\"AttackDoze\",\"pp\":9}]}]}],\"player_datas\":{\"player\":{\"move_log\":{\"cooldown\":{\"ATTACK\":0},\"count\":{\"ATTACK\":1},\"cooldown_next\":{\"ITEM\":1},\"last_move_type\":\"ATTACK\"}},\"opponent\":{}}}', NULL, NULL, '2026-02-03 21:40:36'),
 (438, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:user-added', '{\"player_id\":\"f8a69ceb-1ef8-4d0b-81dc-d6d59e425163\",\"username\":\"ConspiracyRick\",\"player_avatar_id\":\"AvatarRickDefault\",\"level\":1,\"owned_morties\":[{\"owned_morty_id\":\"a3e20258-48f8-4602-af17-ad0348c2fbcb\",\"morty_id\":\"MortyDefault\",\"hp\":20,\"variant\":\"Normal\",\"is_locked\":false,\"is_trading_locked\":false,\"fight_pit_id\":null}],\"state\":\"WORLD\"}', NULL, NULL, '2026-02-03 21:54:27'),
 (439, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'shard:raid-boss-state-changed', '{\"raid_event_id\":\"RaidBossKillerAsteroid_2025\",\"shard_id\":\"78496e72-fb88-11f0-b2fd-8b24d97da62f\",\"current_state\":\"active\",\"world_id\":1,\"spawn_location\":\"37,58\",\"boss_id\":\"killer_asteroid\",\"asset_id\":\"RaidBossKillerAsteroid\",\"threat_lvl\":10,\"total_damage\":\"0\",\"initial_health\":30860800,\"max_health_bars\":60275,\"event_state_next_timestamp\":\"2026-03-09 08:57:33\",\"has_ran\":false,\"permit_start\":50,\"permit_buy_in\":1,\"ticket_buy_in\":0}', NULL, NULL, '2026-02-03 21:54:28');
+=======
+(290, '56092cc3-d968-4d2d-8c54-98ed0817hu97', 'room:pickup-added', '{\"contents\":[{\"type\":\"ITEM\",\"amount\":1,\"item_id\":\"ItemCable\",\"rarity\":75}],\"placement\":[60,73],\"pickup_id\":\"0a068839-f86d-4ea9-9769-cb22fbe0b265\"}', '0a068839-f86d-4ea9-9769-cb22fbe0b265', NULL, '2026-02-03 14:12:02');
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 
 -- --------------------------------------------------------
 
@@ -602,9 +618,15 @@ CREATE TABLE `owned_attacks` (
 -- Dumping data for table `owned_attacks`
 --
 
+<<<<<<< HEAD
 INSERT INTO `owned_attacks` (`id`, `owned_morty_id`, `position`, `attack_id`, `pp`, `pp_stat`, `type`, `is_accurate`, `to_self`, `stat`, `amount`) VALUES
 (1, 'a3e20258-48f8-4602-af17-ad0348c2fbcb', 0, 'AttackOutburst', 12, 12, NULL, NULL, NULL, NULL, NULL),
 (2, '49b46dfa-1e78-4773-b772-89ac459109b8', 0, 'AttackOutburst', 12, 12, NULL, NULL, NULL, NULL, NULL);
+=======
+INSERT INTO `owned_attacks` (`id`, `owned_morty_id`, `attack_id`, `position`, `pp`, `pp_stat`) VALUES
+(1, 'a3e20258-48f8-4602-af17-ad0348c2fbcb', 'AttackOutburst', 0, 12, 12),
+(2, '49b46dfa-1e78-4773-b772-89ac459109b8', 'AttackOutburst', 0, 12, 12);
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 
 -- --------------------------------------------------------
 
@@ -681,9 +703,15 @@ CREATE TABLE `owned_morties` (
 -- Dumping data for table `owned_morties`
 --
 
+<<<<<<< HEAD
 INSERT INTO `owned_morties` (`id`, `player_id`, `owned_morty_id`, `morty_id`, `level`, `xp`, `hp`, `hp_stat`, `attack_stat`, `defence_stat`, `variant`, `speed_stat`, `is_locked`, `is_trading_locked`, `fight_pit_id`, `evolution_points`, `xp_lower`, `xp_upper`, `created_at`) VALUES
 (1, 'f8a69ceb-1ef8-4d0b-81dc-d6d59e425163', 'a3e20258-48f8-4602-af17-ad0348c2fbcb', 'MortyDefault', 5, 125, 20, 20, 11, 10, 'Normal', 10, 'false', 'false', 'null', 0, 125, 216, '2026-02-03 18:35:46'),
 (2, '38d582e2-8942-4110-8144-6d959649c17b', '49b46dfa-1e78-4773-b772-89ac459109b8', 'MortyDefault', 5, 125, 20, 20, 11, 10, 'Normal', 10, 'false', 'false', 'null', 0, 125, 216, '2026-02-03 18:35:46');
+=======
+INSERT INTO `owned_morties` (`id`, `player_id`, `owned_morty_id`, `morty_id`, `level`, `xp`, `hp`, `hp_stat`, `attack_stat`, `defence_stat`, `variant`, `speed_stat`, `is_locked`, `is_trading_locked`, `fight_pit_id`, `evolution_points`, `xp_lower`, `xp_upper`) VALUES
+(1, 'f8a69ceb-1ef8-4d0b-81dc-d6d59e425163', 'a3e20258-48f8-4602-af17-ad0348c2fbcb', 'MortyDefault', 5, 125, 20, 20, 11, 10, 'Normal', 10, 'false', 'false', 'null', 0, 125, 216),
+(2, '38d582e2-8942-4110-8144-6d959649c17b', '49b46dfa-1e78-4773-b772-89ac459109b8', 'MortyDefault', 5, 125, 20, 20, 11, 10, 'Normal', 10, 'false', 'false', 'null', 0, 125, 216);
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 
 -- --------------------------------------------------------
 
@@ -771,9 +799,15 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
+<<<<<<< HEAD
 INSERT INTO `users` (`id`, `recovery_code_hash`, `secret`, `player_id`, `username`, `player_avatar_id`, `level`, `xp`, `streak`, `coins`, `coupons`, `permits`, `wins`, `losses`, `active_deck_id`, `decks_owned`, `tags`, `xp_lower`, `xp_upper`, `donation_request`, `room_id`, `world_id`, `zone_id`, `session_id`, `state`, `last_event_id`, `last_seen`, `created`) VALUES
 (1, '$2y$10$5bb3l.esgFe/zOZ5XOOZeOnzpTvDIcKst3dBU.1fY0KqiqR2JuhLq', '4f0b1131-08d0-449c-9f6e-c70241b8cb70', 'f8a69ceb-1ef8-4d0b-81dc-d6d59e425163', 'ConspiracyRick', 'AvatarRickDefault', 1, 27, 0, 0, 0, 0, 0, 0, 0, 3, '[]', 27, 64, NULL, '56092cc3-d968-4d2d-8c54-98ed0817hu97', NULL, NULL, '67f449a4-659b-4e67-8291-ff167ead4131', 'WORLD', 439, '2026-02-03 21:55:25', '2026-01-30'),
 (2, NULL, '75b28069-e86e-442f-9e56-bde081044cee', '38d582e2-8942-4110-8144-6d959649c17b', 'Test', 'AvatarRickDefault', 1, 27, 0, 0, 0, 0, 0, 0, 0, 3, '[]', 27, 64, NULL, '56092cc3-d968-4d2d-8c54-98ed0817hu97', NULL, NULL, '44d2d724-51f6-4914-b782-14b49ebd6b98', 'WORLD', 184, '2026-02-02 00:38:18', '2026-02-01');
+=======
+INSERT INTO `users` (`id`, `recovery_code_hash`, `secret`, `player_id`, `username`, `player_avatar_id`, `level`, `xp`, `streak`, `wins`, `losses`, `active_deck_id`, `decks_owned`, `tags`, `xp_lower`, `xp_upper`, `donation_request`, `room_id`, `world_id`, `zone_id`, `session_id`, `state`, `last_event_id`, `last_seen`, `created`) VALUES
+(1, '$2y$10$5bb3l.esgFe/zOZ5XOOZeOnzpTvDIcKst3dBU.1fY0KqiqR2JuhLq', '4f0b1131-08d0-449c-9f6e-c70241b8cb70', 'f8a69ceb-1ef8-4d0b-81dc-d6d59e425163', 'ConspiracyRick', 'AvatarRickDefault', 1, 27, 0, 0, 0, 0, 3, '[]', 27, 64, NULL, '56092cc3-d968-4d2d-8c54-98ed0817hu97', NULL, NULL, '44a51b90-e6b2-4895-8755-0c186a0e02d5', 'WORLD', 290, '2026-02-03 14:46:17', '2026-01-30'),
+(2, NULL, '75b28069-e86e-442f-9e56-bde081044cee', '38d582e2-8942-4110-8144-6d959649c17b', 'Test', 'AvatarRickDefault', 1, 27, 0, 0, 0, 0, 3, '[]', 27, 64, NULL, '56092cc3-d968-4d2d-8c54-98ed0817hu97', NULL, NULL, '44d2d724-51f6-4914-b782-14b49ebd6b98', 'WORLD', 184, '2026-02-02 00:38:18', '2026-02-01');
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 
 -- --------------------------------------------------------
 
@@ -899,7 +933,11 @@ ALTER TABLE `events`
 -- AUTO_INCREMENT for table `event_queue`
 --
 ALTER TABLE `event_queue`
+<<<<<<< HEAD
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=440;
+=======
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=291;
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 
 --
 -- AUTO_INCREMENT for table `friend_list`

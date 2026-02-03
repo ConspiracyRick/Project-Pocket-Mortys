@@ -1,11 +1,33 @@
 <?php
 // event/check  (raid test publisher)
+<<<<<<< HEAD
+=======
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
 
 require __DIR__ . "/../../pocket_f4894h398r8h9w9er8he98he.php";
 require_once __DIR__ . "/../../lib/events.php";
 
+<<<<<<< HEAD
+=======
+$REQUIRE_SECRET = false;
+$EVENT_SECRET   = "change_me_to_a_long_random_string";
+
+if ($REQUIRE_SECRET) {
+    $hdr = $_SERVER['HTTP_X_EVENT_SECRET'] ?? '';
+    if (!hash_equals($EVENT_SECRET, $hdr)) {
+        http_response_code(403);
+        echo json_encode(["success" => false, "error" => "Forbidden"], JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+}
+
+>>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
 // Read body
 $raw  = file_get_contents("php://input");
 $body = json_decode($raw, true);
