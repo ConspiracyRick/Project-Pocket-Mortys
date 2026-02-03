@@ -1,4 +1,6 @@
 <?php
+//login
+
 header("Content-Type: application/json; charset=utf-8");
 header("X-Powered-By: Express");
 header("Access-Control-Allow-Origin: *");
@@ -43,7 +45,7 @@ $username = $user['username'];
 $level = $user['level'];
 $tags = $user['tags'];
 $session_id = uuidv4();
-$ping_url = 'https://pocketmortys.conspiracyrick.com/session/ping-dynamic';
+$ping_url = 'https://game.conspiracyrick.com/session/ping-dynamic';
 // Generate issued token time
 $iat = time(); // issued at (now)
 // when to expire token
@@ -89,7 +91,7 @@ $base64Signature = base64url_encode($signature);
 $jwt = $base64Header . "." . $base64Payload . "." . $base64Signature;
 
 $response = json_encode([
-    "session_url" => "https://pocketmortys.conspiracyrick.com/sse/?token=".$jwt,
+    "session_url" => "https://game.conspiracyrick.com/sse/?token=".$jwt,
     "session_url_ttl" => "60"
 ], JSON_UNESCAPED_SLASHES);
 

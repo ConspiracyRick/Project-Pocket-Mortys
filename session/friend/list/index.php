@@ -1,4 +1,6 @@
 <?php
+// friend_list
+
 header("Content-Type: application/json; charset=utf-8");
 header("X-Powered-By: Express");
 header("Access-Control-Allow-Origin: *");
@@ -174,10 +176,18 @@ $friendsStmt = $pdo->prepare("
         p.player_avatar_id,
         p.level,
         p.player_id,
-        COALESCE(p.wins,   0)       AS wins,
-        COALESCE(p.losses, 0)       AS losses,
-        COALESCE(p.online, 'false') AS online,
-        p.donation_request          AS donation_request
+        COALESCE(p.wins,   0) AS wins,
+        COALESCE(p.losses, 0) AS losses,
+
+        -- Online if seen in last 5 minutes
+        CASE
+            WHEN p.last_seen IS NOT NULL
+             AND p.last_seen >= (NOW() - INTERVAL 5 MINUTE)
+            THEN 'true'
+            ELSE 'false'
+        END AS online,
+
+        p.donation_request AS donation_request
     FROM friend_list r
     JOIN users p ON p.player_id = 
         CASE 
@@ -185,7 +195,7 @@ $friendsStmt = $pdo->prepare("
             WHEN r.player_id_b = ? THEN r.player_id_a
         END
     WHERE ? IN (r.player_id_a, r.player_id_b)
-      AND r.pending != 'true'                -- ← change this line based on your real data
+      AND r.pending != 'true'
     ORDER BY p.username ASC
 ");
 
