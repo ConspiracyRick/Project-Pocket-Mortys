@@ -1,7 +1,10 @@
 <?php
 // event/check  (raid test publisher)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 3b76ad9 (pickup items (locally only), emote, events now stored in db)
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
