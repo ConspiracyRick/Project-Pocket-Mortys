@@ -233,7 +233,7 @@ RewriteRule ^manifest\.json$ - [L]
 RewriteRule ^rat\.json$ - [L]
 
 # allow your API paths
-RewriteRule ^(Aliases|rat|Android|Status|user|login|sse|session|ping-dynamic|inappdeletion|get-account-data-storage-time|iap|display|list|morty|slots|config|arena|rewards|pending|decks|trading|event|events|moving-mortys|lte|fyre|promos|shard)/ - [L]
+RewriteRule ^(phpmyadmin|is-gdpr|AssetBundles|AssetBundle-android:1011-ios:1011__7b175320|Aliases|rat|Android|Status|user|login|sse|session|ping-dynamic|inappdeletion|get-account-data-storage-time|iap|display|list|morty|slots|config|arena|rewards|pending|decks|trading|event|events|moving-mortys|lte|fyre|promos|shard)/ - [L]
 
 # block everything else
 RewriteRule ^ - [F,L]
