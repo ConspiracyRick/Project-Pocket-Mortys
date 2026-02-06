@@ -62,3 +62,13 @@ Please open an issue or submit a pull request.
 ## Support
 
 Use GitHub Issues for bug reports and feature requests.
+
+## License & Attribution
+
+This project is licensed under the MIT License.
+
+If you use this code in another project, server, or fork,
+you **must credit**:
+
+**Ricky Hill – Pocket Mortys Public Server**
+https://github.com/ConspiracyRick/Pocket-Mortys-Public-Server

@@ -1,5 +1,5 @@
 <?php
-// session/gacha  (DB-driven PROMO ONLY + coupon cost + items first + inventory cap 10)
+// session/gacha
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -392,7 +392,7 @@ try {
     }
   }
 
-  // ✅ items first, then mortys
+  // items first, then mortys
   $response["result"] = array_merge($itemResults, $mortyResults);
 
   $pdo->commit();
