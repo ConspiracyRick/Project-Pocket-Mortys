@@ -1,4 +1,5 @@
 <?php
+// player-details
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -165,9 +166,9 @@ $responseArray = [
     "xp" => (int)($user['xp'] ?? 0),
     "streak" => (int)($user['streak'] ?? 0),
 
-    "coins" => 216,
-    "coupons" => 343,
-    "permits" => 343,
+    "coins" => (int)($user['coins'] ?? 0),
+    "coupons" => (int)($user['coupons'] ?? 0),
+    "permits" => (int)($user['permits'] ?? 0),
 
     "challenge_reward" => false,
 

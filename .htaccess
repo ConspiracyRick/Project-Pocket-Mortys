@@ -1,6 +1,5 @@
+Options -Indexes
 RewriteEngine On
-
-#Options -Indexes
 
 # Disable Apache's automatic slash redirect for this path
 DirectorySlash Off
@@ -9,227 +8,217 @@ RewriteCond %{HTTP:X-Forwarded-Proto} =https
 # debug
 #RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5befc7c (can now initiate battles)
-# Internally rewrite /session/battle-wild-morty to /session/battle-wild-morty/
+RewriteCond %{REQUEST_URI} ^/session/owned_morties/absorb$
+RewriteRule ^session/owned_morties/absorb$ /session/owned_morties/absorb/ [L]
+
+RewriteCond %{REQUEST_URI} ^/session/decks/slots/buy$
+RewriteRule ^session/decks/slots/buy$ /session/decks/slots/buy/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/session/deck/set-active$
+RewriteRule ^session/deck/set-active$ /session/deck/set-active/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/session/deck/edit$
+RewriteRule ^session/deck/edit$ /session/deck/edit/ [L]
+
+
 RewriteCond %{REQUEST_URI} ^/session/battle-wild-morty$
 RewriteRule ^session/battle-wild-morty$ /session/battle-wild-morty/ [L]
 
-<<<<<<< HEAD
-=======
->>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
-=======
->>>>>>> 3b76ad9 (pickup items (locally only), emote, events now stored in db)
-=======
->>>>>>> 5befc7c (can now initiate battles)
-# Internally rewrite /linkaccount to /linkaccount/
+
 RewriteCond %{REQUEST_URI} ^/linkaccount$
 RewriteRule ^linkaccount$ /linkaccount/ [L]
 
-# Internally rewrite /inappdeletion/request-account-deletion to /inappdeletion/request-account-deletion/
+
 RewriteCond %{REQUEST_URI} ^/inappdeletion/request-account-deletion$
 RewriteRule ^inappdeletion/request-account-deletion$ /inappdeletion/request-account-deletion/ [L]
 
-# Internally rewrite /session/collect-pickup to /session/collect-pickup/
+
 RewriteCond %{REQUEST_URI} ^/session/collect-pickup$
 RewriteRule ^session/collect-pickup$ /session/collect-pickup/ [L]
 
-# Internally rewrite /session/battle-boss to /session/battle-boss/
+
 RewriteCond %{REQUEST_URI} ^/session/battle-boss$
 RewriteRule ^session/battle-boss$ /session/battle-boss/ [L]
 
-# Internally rewrite /session/emote/room to /session/emote/room/
+
 RewriteCond %{REQUEST_URI} ^/session/emote/room$
 RewriteRule ^session/emote/room$ /session/emote/room/ [L]
 
-# Internally rewrite /shard/scores to /shard/scores/
+
 RewriteCond %{REQUEST_URI} ^/shard/scores$
 RewriteRule ^shard/scores$ /shard/scores/ [L]
 
-# Internally rewrite /event/brackets to /event/brackets/
+
 RewriteCond %{REQUEST_URI} ^/event/brackets$
 RewriteRule ^event/brackets$ /event/brackets/ [L]
 
-# Internally rewrite /session/player-avatar/set-active to /session/player-avatar/set-active/
+
 RewriteCond %{REQUEST_URI} ^/session/player-avatar/set-active$
 RewriteRule ^session/player-avatar/set-active$ /session/player-avatar/set-active/ [L]
 
-# Internally rewrite /session/player-avatar/buy to /session/player-avatar/buy/
+
 RewriteCond %{REQUEST_URI} ^/session/player-avatar/buy$
 RewriteRule ^session/player-avatar/buy$ /session/player-avatar/buy/ [L]
 
-# Internally rewrite /session/buy-item to /session/buy-item/
+
 RewriteCond %{REQUEST_URI} ^/session/buy-item$
 RewriteRule ^session/buy-item$ /session/buy-item/ [L]
 
-# Internally rewrite /event/pendingRewards to /event/pendingRewards/
+
 RewriteCond %{REQUEST_URI} ^/event/pendingRewards$
 RewriteRule ^event/pendingRewards$ /event/pendingRewards/ [L]
 
-# Internally rewrite /event/check to /event/check/
+
 RewriteCond %{REQUEST_URI} ^/event/check$
 RewriteRule ^event/check$ /event/check/ [L]
 
-# Internally rewrite /lte/fyre/events/list to /lte/fyre/events/list/
+
 RewriteCond %{REQUEST_URI} ^/lte/fyre/events/list$
 RewriteRule ^lte/fyre/events/list$ /lte/fyre/events/list/ [L]
 
-# Internally rewrite /moving-mortys/events/list to /moving-mortys/events/list/
+
 RewriteCond %{REQUEST_URI} ^/moving-mortys/events/list$
 RewriteRule ^moving-mortys/events/list$ /moving-mortys/events/list/ [L]
 
-# Internally rewrite /arena/battle/bot to /arena/battle/bot/
+
 RewriteCond %{REQUEST_URI} ^/arena/battle/bot$
 RewriteRule ^arena/battle/bot$ /arena/battle/bot/ [L]
 
-# Internally rewrite /arena/energy/fetch to /arena/energy/fetch/
+
 RewriteCond %{REQUEST_URI} ^/arena/energy/fetch$
 RewriteRule ^arena/energy/fetch$ /arena/energy/fetch/ [L]
 
-# Internally rewrite /arena/scores/list to /arena/scores/list/
+
 RewriteCond %{REQUEST_URI} ^/arena/scores/list$
 RewriteRule ^arena/scores/list$ /arena/scores/list/ [L]
 
-# Internally rewrite /arena/rewards/list to /arena/rewards/list/
+
 RewriteCond %{REQUEST_URI} ^/arena/rewards/list$
 RewriteRule ^arena/rewards/list$ /arena/rewards/list/ [L]
 
-# Internally rewrite /arena/rewards/pending/list to /arena/rewards/pending/list/
+
 RewriteCond %{REQUEST_URI} ^/arena/rewards/pending/list$
 RewriteRule ^arena/rewards/pending/list$ /arena/rewards/pending/list/ [L]
 
-# Internally rewrite /arena/events/list to /arena/events/list/
+
 RewriteCond %{REQUEST_URI} ^/arena/events/list$
 RewriteRule ^arena/events/list$ /arena/events/list/ [L]
 
-# Internally rewrite /session/challenge/list to /session/challenge/list/
+
 RewriteCond %{REQUEST_URI} ^/session/challenge/list$
 RewriteRule ^session/challenge/list$ /session/challenge/list/ [L]
 
-# Internally rewrite /session/gacha to /session/gacha/
+
 RewriteCond %{REQUEST_URI} ^/session/gacha$
 RewriteRule ^session/gacha$ /session/gacha/ [L]
 
-# Internally rewrite /session/gacha-info to /session/gacha-info/
+
 RewriteCond %{REQUEST_URI} ^/session/gacha-info$
 RewriteRule ^session/gacha-info$ /session/gacha-info/ [L]
 
-# Internally rewrite /promos/active to /promos/active/
+
 RewriteCond %{REQUEST_URI} ^/promos/active$
 RewriteRule ^promos/active$ /promos/active/ [L]
 
-# Internally rewrite /is-gdpr to /is-gdpr/
+
 RewriteCond %{REQUEST_URI} ^/is-gdpr$
 RewriteRule ^is-gdpr$ /is-gdpr/ [L]
 
-# Internally rewrite /inappdeletion/get-account-data-storage-time to /inappdeletion/get-account-data-storage-time/
+
 RewriteCond %{REQUEST_URI} ^/inappdeletion/get-account-data-storage-time$
 RewriteRule ^inappdeletion/get-account-data-storage-time$ /inappdeletion/get-account-data-storage-time/ [L]
 
-# Internally rewrite /iap/display/list to /iap/display/list/
+
 RewriteCond %{REQUEST_URI} ^/iap/display/list$
 RewriteRule ^iap/display/list$ /iap/display/list/ [L]
 
-# Internally rewrite /user/register to /user/register/
+
 RewriteCond %{REQUEST_URI} ^/user/register$
 RewriteRule ^user/register$ /user/register/ [L]
 
-# Internally rewrite /user/login to /user/login/
+
 RewriteCond %{REQUEST_URI} ^/user/login$
 RewriteRule ^user/login$ /user/login/ [L]
 
-# Internally rewrite /sse to /sse/
+
 RewriteCond %{REQUEST_URI} ^/sse$
 RewriteRule ^sse$ /sse/ [L]
 
-# Internally rewrite /session/ping-dynamic to /session/ping-dynamic/
+
 RewriteCond %{REQUEST_URI} ^/session/ping-dynamic$
 RewriteRule ^session/ping-dynamic$ /session/ping-dynamic/ [L]
 
-# Internally rewrite /decks/slots/config to /decks/slots/config/
+
 RewriteCond %{REQUEST_URI} ^/decks/slots/config$
 RewriteRule ^decks/slots/config$ /decks/slots/config/ [L]
 
-# Internally rewrite /morty/slots/config to /morty/slots/config/
+
 RewriteCond %{REQUEST_URI} ^/morty/slots/config$
 RewriteRule ^morty/slots/config$ /morty/slots/config/ [L]
 
-# Internally rewrite /trading/config to /trading/config/
+
 RewriteCond %{REQUEST_URI} ^/trading/config$
 RewriteRule ^trading/config$ /trading/config/ [L]
 
-# Internally rewrite /session/player-details to /session/player-details/
+
 RewriteCond %{REQUEST_URI} ^/session/player-details$
 RewriteRule ^session/player-details$ /session/player-details/ [L]
 
-# Internally rewrite /session/player-avatar/migrate to /session/player-avatar/migrate/
+
 RewriteCond %{REQUEST_URI} ^/session/player-avatar/migrate$
 RewriteRule ^session/player-avatar/migrate$ /session/player-avatar/migrate/ [L]
 
-# Internally rewrite /session/friend/list to /session/friend/list/
+
 RewriteCond %{REQUEST_URI} ^/session/friend/list$
 RewriteRule ^session/friend/list$ /session/friend/list/ [L]
 
-# Internally rewrite /session/friend/search to /session/friend/search/
+
 RewriteCond %{REQUEST_URI} ^/session/friend/search$
 RewriteRule ^session/friend/search$ /session/friend/search/ [L]
 
-# Internally rewrite /session/friend/request to /session/friend/request/
+
 RewriteCond %{REQUEST_URI} ^/session/friend/request$
 RewriteRule ^session/friend/request$ /session/friend/request/ [L]
 
-# Internally rewrite /session/friend/remove to /session/friend/remove/
+
 RewriteCond %{REQUEST_URI} ^/session/friend/remove$
 RewriteRule ^session/friend/remove$ /session/friend/remove/ [L]
 
-# Internally rewrite /session/friend/response to /session/friend/response/
+
 RewriteCond %{REQUEST_URI} ^/session/friend/response$
 RewriteRule ^session/friend/response$ /session/friend/response/ [L]
 
-# Internally rewrite /session/dimensions/query to /session/dimensions/query/
+
 RewriteCond %{REQUEST_URI} ^/session/dimensions/query$
 RewriteRule ^session/dimensions/query$ /session/dimensions/query/ [L]
 
-# Internally rewrite /session/join-room to /session/join-room/
+
 RewriteCond %{REQUEST_URI} ^/session/join-room$
 RewriteRule ^session/join-room$ /session/join-room/ [L]
 
-# Internally rewrite /session/leave-room to /session/leave-room/
+
 RewriteCond %{REQUEST_URI} ^/session/leave-room$
 RewriteRule ^session/leave-room$ /session/leave-room/ [L]
 
-# Internally rewrite /session/state to /session/state/
+
 RewriteCond %{REQUEST_URI} ^/session/state$
 RewriteRule ^session/state$ /session/state/ [L]
 
-# Internally rewrite /session/battle-bot to /session/battle-bot/
+
 RewriteCond %{REQUEST_URI} ^/session/battle-bot$
 RewriteRule ^session/battle-bot$ /session/battle-bot/ [L]
 
-# Internally rewrite /session/battle/ready to /session/battle/ready/
+
 RewriteCond %{REQUEST_URI} ^/session/battle/ready$
 RewriteRule ^session/battle/ready$ /session/battle/ready/ [L]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5befc7c (can now initiate battles)
-# Internally rewrite /session/battle/move to /session/battle/move/
+
 RewriteCond %{REQUEST_URI} ^/session/battle/move$
 RewriteRule ^session/battle/move$ /session/battle/move/ [L]
 
-<<<<<<< HEAD
-=======
->>>>>>> 8d8cc50 (pickup items (locally only), emote, events now stored in db)
-=======
->>>>>>> 3b76ad9 (pickup items (locally only), emote, events now stored in db)
-=======
->>>>>>> 5befc7c (can now initiate battles)
-# Internally rewrite /sp/gacha-info to /sp/gacha-info/
+
 RewriteCond %{REQUEST_URI} ^/sp/gacha-info$
 RewriteRule ^sp/gacha-info$ /sp/gacha-info/ [L]
 
@@ -237,3 +226,14 @@ RewriteRule ^sp/gacha-info$ /sp/gacha-info/ [L]
     ForceType application/octet-stream
     Header set Content-Disposition "attachment; filename=manifest.json"
 </Files>
+
+# allow manifest at root
+RewriteRule ^manifest\.json$ - [L]
+
+RewriteRule ^rat\.json$ - [L]
+
+# allow your API paths
+RewriteRule ^(Aliases|rat|Android|Status|user|login|sse|session|ping-dynamic|inappdeletion|get-account-data-storage-time|iap|display|list|morty|slots|config|arena|rewards|pending|decks|trading|event|events|moving-mortys|lte|fyre|promos|shard)/ - [L]
+
+# block everything else
+RewriteRule ^ - [F,L]

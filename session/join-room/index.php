@@ -74,7 +74,7 @@ if ($requested_room_id !== "") {
 // Option B: choose least populated room (based on users in that room seen in last 5 minutes)
 if (!$roomRow) {
   $q = $pdo->prepare("
-    SELECT r.room_id, r.room_udp_host, r.room_udp_port
+    SELECT r.room_id, r.room_udp_host, r.room_udp_port, r.world_id, r.zone_id
     FROM room_ids r
     LEFT JOIN users u
       ON u.room_id = r.room_id
@@ -97,8 +97,8 @@ $room_id = (string)$roomRow["room_id"];
 $room_udp_host = (string)($roomRow["room_udp_host"] ?? "");
 $room_udp_port = (string)($roomRow["room_udp_port"] ?? "");
 
-// zone_id logic (still placeholder; you can replace with real zone picking)
-$zone_id = "[13-15]";
+$world_id = (string)($roomRow["world_id"] ?? "");
+$zone_id = (string)($roomRow["zone_id"] ?? "");
 
 // ------------------------------------------------------------
 // Update presence in users table
@@ -124,7 +124,7 @@ $up->execute([
   $my_player_id,
 ]);
 
-// ✅ If nothing changed, it might still be fine (values already identical).
+
 if ($up->rowCount() === 0) {
   // Check if player_id actually exists
   $chk = $pdo->prepare("SELECT 1 FROM users WHERE player_id = ? LIMIT 1");
@@ -187,44 +187,105 @@ $incentive = [
   "token" => ""
 ];
 
-// Build morties map for everyone in room
+// Build morties map for everyone in room (ACTIVE DECK ONLY)
 $player_ids = array_values(array_unique(array_map(fn($r) => (string)$r["player_id"], $present_users)));
 $morties_by_player = [];
 
 if (count($player_ids) > 0) {
   $placeholders = implode(",", array_fill(0, count($player_ids), "?"));
-  $mstmt = $pdo->prepare("
+
+  // Pull active_deck_id for each player in room + the JSON array of owned_morty_ids for that deck
+  $q = $pdo->prepare("
     SELECT
-      player_id,
-      owned_morty_id,
-      morty_id,
-      hp,
-      variant,
-      is_locked,
-      is_trading_locked,
-      fight_pit_id
-    FROM owned_morties
-    WHERE player_id IN ($placeholders)
-    ORDER BY id ASC
+      u.player_id,
+      u.active_deck_id,
+      d.owned_morty_ids
+    FROM users u
+    LEFT JOIN decks d
+      ON d.player_id = u.player_id
+     AND d.deck_id  = u.active_deck_id
+    WHERE u.player_id IN ($placeholders)
+      AND u.last_seen >= (NOW() - INTERVAL 5 MINUTE)
   ");
-  $mstmt->execute($player_ids);
+  $q->execute($player_ids);
 
-  while ($m = $mstmt->fetch(PDO::FETCH_ASSOC)) {
-    $pid = (string)$m["player_id"];
+  // Map: player_id => decoded list of owned_morty_ids (in deck order)
+  $deck_ids_by_player = [];
+  while ($r = $q->fetch(PDO::FETCH_ASSOC)) {
+    $pid = (string)$r["player_id"];
+    $json = $r["owned_morty_ids"] ?? "[]";
+    $ids = json_decode($json, true);
+    if (!is_array($ids)) $ids = [];
+
+    // normalize to strings
+    $ids = array_values(array_filter(array_map(fn($x) => is_string($x) ? trim($x) : "", $ids), fn($x) => $x !== ""));
+    $deck_ids_by_player[$pid] = $ids;
+
+    // init output for this player (even if empty)
     if (!isset($morties_by_player[$pid])) $morties_by_player[$pid] = [];
+  }
 
-    $is_locked = ($m["is_locked"] === "true" || $m["is_locked"] === "1" || $m["is_locked"] === 1);
-    $is_trading_locked = ($m["is_trading_locked"] === "true" || $m["is_trading_locked"] === "1" || $m["is_trading_locked"] === 1);
+  // Collect all deck owned_morty_ids across room for a single owned_morties query
+  $all_deck_owned_ids = [];
+  foreach ($deck_ids_by_player as $ids) {
+    foreach ($ids as $id) $all_deck_owned_ids[$id] = true;
+  }
+  $all_deck_owned_ids = array_keys($all_deck_owned_ids);
 
-    $morties_by_player[$pid][] = [
-      "owned_morty_id" => (string)$m["owned_morty_id"],
-      "morty_id" => (string)$m["morty_id"],
-      "hp" => (int)$m["hp"],
-      "variant" => $m["variant"] ?: "Normal",
-      "is_locked" => (bool)$is_locked,
-      "is_trading_locked" => (bool)$is_trading_locked,
-      "fight_pit_id" => ($m["fight_pit_id"] === null || $m["fight_pit_id"] === "null") ? null : (string)$m["fight_pit_id"]
-    ];
+  if (count($all_deck_owned_ids) > 0) {
+    $ph2 = implode(",", array_fill(0, count($all_deck_owned_ids), "?"));
+
+    // Fetch morty rows only for owned_morty_ids that appear in someone’s active deck
+    $mstmt = $pdo->prepare("
+      SELECT
+        player_id,
+        owned_morty_id,
+        morty_id,
+        hp,
+        variant,
+        is_locked,
+        is_trading_locked,
+        fight_pit_id
+      FROM owned_morties
+      WHERE owned_morty_id IN ($ph2)
+      ORDER BY id ASC
+    ");
+    $mstmt->execute($all_deck_owned_ids);
+
+    // Temp map: owned_morty_id => morty data (grouped per player)
+    $morty_row_by_owned_id = [];
+    while ($m = $mstmt->fetch(PDO::FETCH_ASSOC)) {
+      $oid = (string)$m["owned_morty_id"];
+
+      $is_locked = ($m["is_locked"] === "true" || $m["is_locked"] === "1" || $m["is_locked"] === 1);
+      $is_trading_locked = ($m["is_trading_locked"] === "true" || $m["is_trading_locked"] === "1" || $m["is_trading_locked"] === 1);
+
+      $morty_row_by_owned_id[$oid] = [
+        "owned_morty_id" => $oid,
+        "morty_id" => (string)$m["morty_id"],
+        "hp" => (int)$m["hp"],
+        "variant" => $m["variant"] ?: "Normal",
+        "is_locked" => (bool)$is_locked,
+        "is_trading_locked" => (bool)$is_trading_locked,
+        "fight_pit_id" => ($m["fight_pit_id"] === null || $m["fight_pit_id"] === "null") ? null : (string)$m["fight_pit_id"]
+      ];
+    }
+
+    // Now build morties_by_player in the SAME ORDER as the deck JSON array
+    foreach ($deck_ids_by_player as $pid => $ids) {
+      $out = [];
+      foreach ($ids as $oid) {
+        if (isset($morty_row_by_owned_id[$oid])) {
+          $out[] = $morty_row_by_owned_id[$oid];
+        }
+      }
+      $morties_by_player[$pid] = $out;
+    }
+  } else {
+    // everyone has empty/missing decks
+    foreach ($player_ids as $pid) {
+      if (!isset($morties_by_player[$pid])) $morties_by_player[$pid] = [];
+    }
   }
 }
 
