@@ -53,6 +53,8 @@ Early adopters should expect:
 - Learn Attacks
 - Crafting
 - Swap Stop
+- Challenges
+- Salesman Rick's
 
 ## Legal Disclaimer
 

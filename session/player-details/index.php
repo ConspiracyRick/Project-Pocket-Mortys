@@ -138,12 +138,26 @@ $stmt = $pdo->prepare("SELECT player_avatar_id FROM owned_avatars WHERE player_i
 $stmt->execute([$player_id]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$avatarString = trim($row['player_avatar_id'], '[]"'); // remove brackets/quotes if present
-$avatarArray = array_map('trim', explode(',', $avatarString));
+$owned_avatars = [];
 
-$owned_avatars = array_map(function($avatar) {
-    return ["player_avatar_id" => $avatar];
-}, $avatarArray);
+$raw = $row['player_avatar_id'] ?? '[]';
+
+// Column should be JSON like ["AvatarRickDefault","AvatarBugAnne"]
+$avatars = json_decode($raw, true);
+
+if (!is_array($avatars)) {
+    // fallback: if it was stored as a plain string instead of JSON
+    $avatars = [$raw];
+}
+
+// Clean any accidental wrapping quotes/spaces (just in case old bad data exists)
+$avatars = array_values(array_filter(array_map(function($a) {
+    $a = trim((string)$a);
+    $a = trim($a, "\"' \t\r\n"); // remove stray quotes
+    return $a;
+}, $avatars), fn($a) => $a !== ''));
+
+$owned_avatars = array_map(fn($a) => ["player_avatar_id" => $a], $avatars);
 
 $stmt = $pdo->prepare("SELECT morty_id, caught FROM mortydex WHERE player_id = ?");
 $stmt->execute([$player_id]);
