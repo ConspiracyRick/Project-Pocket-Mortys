@@ -40,6 +40,20 @@ Early adopters should expect:
 - MySQL or MariaDB
 - Apache or Nginx
 
+## TO DO
+- Battle & catch mortys
+- Battle Bots
+- Battle friends
+- Raid & other event Battles
+- Fix item spawning
+- Fix Morties roaming
+- Evolve Mortys
+- Healing
+- Buy deck slots
+- Learn Attacks
+- Crafting
+- Swap Stop
+
 ## Legal Disclaimer
 
 This project is **unofficial** and is **not affiliated with or endorsed by** Adult Swim, Turner Broadcasting, or the original Pocket Mortys developers.
