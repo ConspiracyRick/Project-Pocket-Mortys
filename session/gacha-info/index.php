@@ -9,7 +9,7 @@ header("Vary: Accept-Encoding");
 
 echo '{
 	"gacha_promo": {
-		"gacha_promo_id": "GachaMPPromo20230207_2026",
+		"gacha_promo_id": "GachaMPPromo20230207_2025",
 		"period": [1769438400, 1870042600],
 		"image_url": "https://assets.bps-pmnet.com/Media/Promos/GachaBackgrounds/Cust1605801458922.png",
 		"drop_chance": "0.06",
@@ -357,7 +357,7 @@ echo '{
 		"level": [32, 34]
 	}, {
 		"gacha_id": "GachaMPProduct2",
-		"cost": 10,
+		"cost": 15,
 		"gacha_content": [{
 			"quantity": 1,
 			"reward": "MORTY",
@@ -389,7 +389,7 @@ echo '{
 		"level": [32, 34]
 	}, {
 		"gacha_id": "GachaMPProduct3",
-		"cost": 30,
+		"cost": 40,
 		"gacha_content": [{
 			"quantity": 4,
 			"reward": "MORTY",

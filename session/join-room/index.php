@@ -13,12 +13,12 @@ require_once __DIR__ . "/../../lib/room_entities.php";
 
 $body = json_decode(file_get_contents("php://input"), true) ?: [];
 $session_id = (string)($body["session_id"] ?? "");
-$world_id   = (string)($body["world_id"] ?? "");
+$world_id_in = (string)($body["world_id"] ?? "");
 
 // optional: allow client to request a specific room_id
-$requested_room_id = isset($body["room_id"]) ? (string)$body["room_id"] : "";
+//$requested_room_id = isset($body["room_id"]) ? (string)$body["room_id"] : "";
 
-if ($session_id === "" || $world_id === "") {
+if ($session_id === "" || $world_id_in === "") {
   http_response_code(400);
   echo json_encode(["error" => "Missing session_id or world_id"], JSON_UNESCAPED_SLASHES);
   exit;
@@ -43,13 +43,11 @@ if (!$me) {
 $my_player_id = (string)$me["player_id"];
 
 // ------------------------------------------------------------
-// Choose room from room_ids ONLY
+// Helpers: room row + entity presence
 // ------------------------------------------------------------
-
-// Helper: fetch a room row by room_id
 function fetch_room_row(PDO $pdo, string $room_id): ?array {
   $q = $pdo->prepare("
-    SELECT room_id, room_udp_host, room_udp_port
+    SELECT room_id, room_udp_host, room_udp_port, world_id, zone_id
     FROM room_ids
     WHERE room_id = ?
     LIMIT 1
@@ -59,19 +57,52 @@ function fetch_room_row(PDO $pdo, string $room_id): ?array {
   return $r ? $r : null;
 }
 
-// Option A: if client requested a room_id and it exists, use it
+function room_has_entities(PDO $pdo, string $room_id): bool {
+  // Fast check:
+  // - any active pickup (added but not collected)
+  // - OR any wild-morty-added
+  // - OR any bot-added
+  $st = $pdo->prepare("
+    SELECT 1
+    FROM event_queue
+    WHERE room_id = ?
+      AND (
+        (event_name = 'room:pickup-added' AND pickup_id_collected_by_player_id IS NULL)
+        OR event_name = 'room:wild-morty-added'
+        OR event_name = 'room:bot-added'
+      )
+    LIMIT 1
+  ");
+  $st->execute([$room_id]);
+  return (bool)$st->fetchColumn();
+}
+
+// ------------------------------------------------------------
+// Choose room (MUST already have entities)
+// ------------------------------------------------------------
 $roomRow = null;
+
+/*
+// Option A: if client requested a room_id and it exists, use it ONLY if it has entities
 if ($requested_room_id !== "") {
-  // room_id is bigint in DB, but clients may send string; MySQL will cast safely if numeric
   $roomRow = fetch_room_row($pdo, $requested_room_id);
   if (!$roomRow) {
     http_response_code(404);
     echo json_encode(["error" => "Requested room_id not found"], JSON_UNESCAPED_SLASHES);
     exit;
   }
+  if (!room_has_entities($pdo, (string)$roomRow["room_id"])) {
+    http_response_code(400);
+    echo json_encode([
+      "error" => "ROOM_EMPTY",
+      "detail" => "Requested room is not available.",
+      "room_id" => (string)$roomRow["room_id"]
+    ], JSON_UNESCAPED_SLASHES);
+    exit;
+  }
 }
+*/
 
-// Option B: choose least populated room (based on users in that room seen in last 5 minutes)
 if (!$roomRow) {
   $q = $pdo->prepare("
     SELECT r.room_id, r.room_udp_host, r.room_udp_port, r.world_id, r.zone_id
@@ -79,7 +110,18 @@ if (!$roomRow) {
     LEFT JOIN users u
       ON u.room_id = r.room_id
      AND u.last_seen >= (NOW() - INTERVAL 5 MINUTE)
-    GROUP BY r.room_id, r.room_udp_host, r.room_udp_port
+    WHERE EXISTS (
+      SELECT 1
+      FROM event_queue e
+      WHERE e.room_id = r.room_id
+        AND (
+          (e.event_name = 'room:pickup-added' AND e.pickup_id_collected_by_player_id IS NULL)
+          OR e.event_name = 'room:wild-morty-added'
+          OR e.event_name = 'room:bot-added'
+        )
+      LIMIT 1
+    )
+    GROUP BY r.room_id, r.room_udp_host, r.room_udp_port, r.world_id, r.zone_id
     ORDER BY COUNT(u.player_id) ASC, r.room_id ASC
     LIMIT 1
   ");
@@ -87,8 +129,12 @@ if (!$roomRow) {
   $roomRow = $q->fetch(PDO::FETCH_ASSOC);
 
   if (!$roomRow) {
-    http_response_code(500);
-    echo json_encode(["error" => "No rooms available (room_ids empty)"], JSON_UNESCAPED_SLASHES);
+    // No rooms have entities yet; DO NOT join an empty room.
+    http_response_code(400);
+    echo json_encode([
+      "error" => "NO_READY_ROOMS",
+      "detail" => "No rooms currently available."
+    ], JSON_UNESCAPED_SLASHES);
     exit;
   }
 }
@@ -98,7 +144,7 @@ $room_udp_host = (string)($roomRow["room_udp_host"] ?? "");
 $room_udp_port = (string)($roomRow["room_udp_port"] ?? "");
 
 $world_id = (string)($roomRow["world_id"] ?? "");
-$zone_id = (string)($roomRow["zone_id"] ?? "");
+$zone_id  = (string)($roomRow["zone_id"] ?? "");
 
 // ------------------------------------------------------------
 // Update presence in users table
@@ -124,32 +170,8 @@ $up->execute([
   $my_player_id,
 ]);
 
-
-if ($up->rowCount() === 0) {
-  // Check if player_id actually exists
-  $chk = $pdo->prepare("SELECT 1 FROM users WHERE player_id = ? LIMIT 1");
-  $chk->execute([$my_player_id]);
-  $exists = (bool)$chk->fetchColumn();
-
-  if (!$exists) {
-    http_response_code(500);
-    echo json_encode(["error" => "User row not found for player_id"], JSON_UNESCAPED_SLASHES);
-    exit;
-  }
-
-  // Otherwise: row exists and update was a no-op → success
-}
-
 // ------------------------------------------------------------
-// Ensure room has initial entities (may publish events)
-// ------------------------------------------------------------
-if (!room_is_initialized($pdo, $room_id)) {
-  seed_room_entities($pdo, $room_id, $world_id, $zone_id);
-}
-
-// ------------------------------------------------------------
-// Baseline cursor AFTER seeding
-// Store baseline in users.last_event_id (room_stream_cursor removed)
+// Baseline cursor (NO SEEDING HERE)
 // ------------------------------------------------------------
 $maxBefore = $pdo->prepare("SELECT COALESCE(MAX(id), 0) FROM event_queue WHERE room_id = ?");
 $maxBefore->execute([$room_id]);
@@ -164,7 +186,6 @@ $pdo->prepare("
 
 // ------------------------------------------------------------
 // Snapshot: users currently in this room
-// (include only users seen in last 5 minutes to avoid ghosts)
 // ------------------------------------------------------------
 $pres = $pdo->prepare("
   SELECT player_id, username, player_avatar_id, level, state
@@ -194,7 +215,6 @@ $morties_by_player = [];
 if (count($player_ids) > 0) {
   $placeholders = implode(",", array_fill(0, count($player_ids), "?"));
 
-  // Pull active_deck_id for each player in room + the JSON array of owned_morty_ids for that deck
   $q = $pdo->prepare("
     SELECT
       u.player_id,
@@ -209,7 +229,6 @@ if (count($player_ids) > 0) {
   ");
   $q->execute($player_ids);
 
-  // Map: player_id => decoded list of owned_morty_ids (in deck order)
   $deck_ids_by_player = [];
   while ($r = $q->fetch(PDO::FETCH_ASSOC)) {
     $pid = (string)$r["player_id"];
@@ -217,15 +236,12 @@ if (count($player_ids) > 0) {
     $ids = json_decode($json, true);
     if (!is_array($ids)) $ids = [];
 
-    // normalize to strings
     $ids = array_values(array_filter(array_map(fn($x) => is_string($x) ? trim($x) : "", $ids), fn($x) => $x !== ""));
     $deck_ids_by_player[$pid] = $ids;
 
-    // init output for this player (even if empty)
     if (!isset($morties_by_player[$pid])) $morties_by_player[$pid] = [];
   }
 
-  // Collect all deck owned_morty_ids across room for a single owned_morties query
   $all_deck_owned_ids = [];
   foreach ($deck_ids_by_player as $ids) {
     foreach ($ids as $id) $all_deck_owned_ids[$id] = true;
@@ -235,7 +251,6 @@ if (count($player_ids) > 0) {
   if (count($all_deck_owned_ids) > 0) {
     $ph2 = implode(",", array_fill(0, count($all_deck_owned_ids), "?"));
 
-    // Fetch morty rows only for owned_morty_ids that appear in someone’s active deck
     $mstmt = $pdo->prepare("
       SELECT
         player_id,
@@ -252,7 +267,6 @@ if (count($player_ids) > 0) {
     ");
     $mstmt->execute($all_deck_owned_ids);
 
-    // Temp map: owned_morty_id => morty data (grouped per player)
     $morty_row_by_owned_id = [];
     while ($m = $mstmt->fetch(PDO::FETCH_ASSOC)) {
       $oid = (string)$m["owned_morty_id"];
@@ -271,18 +285,14 @@ if (count($player_ids) > 0) {
       ];
     }
 
-    // Now build morties_by_player in the SAME ORDER as the deck JSON array
     foreach ($deck_ids_by_player as $pid => $ids) {
       $out = [];
       foreach ($ids as $oid) {
-        if (isset($morty_row_by_owned_id[$oid])) {
-          $out[] = $morty_row_by_owned_id[$oid];
-        }
+        if (isset($morty_row_by_owned_id[$oid])) $out[] = $morty_row_by_owned_id[$oid];
       }
       $morties_by_player[$pid] = $out;
     }
   } else {
-    // everyone has empty/missing decks
     foreach ($player_ids as $pid) {
       if (!isset($morties_by_player[$pid])) $morties_by_player[$pid] = [];
     }
@@ -303,10 +313,10 @@ foreach ($present_users as $u) {
   ];
 }
 
-// Snapshot from events
+// Snapshot from events (READ ONLY)
 $entities = build_room_snapshot_from_events($pdo, $room_id);
 
-// Announce join to everyone else
+// Announce join
 publish_event($pdo, $room_id, "room:user-added", [
   "player_id" => $my_player_id,
   "username" => (string)$me["username"],

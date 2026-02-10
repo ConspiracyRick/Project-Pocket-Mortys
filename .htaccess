@@ -8,8 +8,13 @@ RewriteCond %{HTTP:X-Forwarded-Proto} =https
 # debug
 #RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
+RewriteCond %{REQUEST_URI} ^/session/heal$
+RewriteRule ^session/heal$ /session/heal/ [L]
+
+
 RewriteCond %{REQUEST_URI} ^/session/owned_morties/absorb$
 RewriteRule ^session/owned_morties/absorb$ /session/owned_morties/absorb/ [L]
+
 
 RewriteCond %{REQUEST_URI} ^/session/decks/slots/buy$
 RewriteRule ^session/decks/slots/buy$ /session/decks/slots/buy/ [L]
@@ -199,6 +204,10 @@ RewriteCond %{REQUEST_URI} ^/session/join-room$
 RewriteRule ^session/join-room$ /session/join-room/ [L]
 
 
+RewriteCond %{REQUEST_URI} ^/session/room-details$
+RewriteRule ^session/room-details$ /session/room-details/ [L]
+
+
 RewriteCond %{REQUEST_URI} ^/session/leave-room$
 RewriteRule ^session/leave-room$ /session/leave-room/ [L]
 
@@ -233,7 +242,7 @@ RewriteRule ^manifest\.json$ - [L]
 RewriteRule ^rat\.json$ - [L]
 
 # allow your API paths
-RewriteRule ^(phpmyadmin|sp|gacha-info|is-gdpr|AssetBundles|AssetBundle-android:1011-ios:1011__7b175320|Aliases|rat|Android|Status|user|login|sse|session|ping-dynamic|inappdeletion|get-account-data-storage-time|iap|display|list|morty|slots|config|arena|rewards|pending|decks|trading|event|events|moving-mortys|lte|fyre|promos|shard)/ - [L]
+RewriteRule ^(phpmyadmin|sp|lib|gacha-info|is-gdpr|AssetBundles|AssetBundle-android:1011-ios:1011__7b175320|Aliases|rat|Android|Status|user|login|sse|session|ping-dynamic|inappdeletion|get-account-data-storage-time|iap|display|list|morty|slots|config|arena|rewards|pending|decks|trading|event|events|moving-mortys|lte|fyre|promos|shard)/ - [L]
 
 # block everything else
 RewriteRule ^ - [F,L]

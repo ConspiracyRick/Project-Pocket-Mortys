@@ -69,6 +69,6 @@ $battle_payload = [
     "timeout" => (int)30
 ];
 
-publish_event($pdo, $room_id, "battle:move-timer-started", $battle_payload);
+publish_event($pdo, $room_id, "battle:move-timer-started", $battle_payload, (string)$player_id);
 
 echo '{"success":true}';

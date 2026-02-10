@@ -45,11 +45,11 @@ Early adopters should expect:
 - Battle Bots
 - Battle friends
 - Raid & other event Battles
-- Fix item spawning
-- Fix Morties roaming
+- <s>Fix item spawning</s>
+- <s>Fix Morties roaming</s>
 - Evolve Mortys
-- Healing
-- Buy deck slots
+- <s>Healing</s>
+- <s>Buy deck slots</s>
 - Learn Attacks
 - Crafting
 - Swap Stop

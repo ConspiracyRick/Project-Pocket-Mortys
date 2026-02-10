@@ -342,7 +342,7 @@ $user_battle_payload = [
 ];
 
 // Publish into THIS player's current room stream (SSE will receive it)
-publish_event($pdo, $room_id, "battle:start", $payload);
+publish_event($pdo, $room_id, "battle:start", $payload, (string)$player_id);
 publish_event($pdo, $room_id, "room:wild-morty-state-changed", $battle_wild_morty_payload);
 publish_event($pdo, $room_id, "room:user-state-changed", $user_battle_payload);
 

@@ -98,20 +98,70 @@ function room_is_initialized(PDO $pdo, string $room_id): bool {
     return (bool)$stmt->fetchColumn();
 }
 
+function spawn_pick_from_list(array &$pool): array {
+    // If pool is empty, caller should refill it.
+    $idx = array_rand($pool);
+    $pt  = $pool[$idx];
+    unset($pool[$idx]);
+    // reindex so array_rand stays happy later
+    $pool = array_values($pool);
+    return $pt; // ['x'=>..., 'y'=>...]
+}
+
 function seed_room_entities(PDO $pdo, string $room_id, string $world_id, string $zone_id): void {
     mt_srand((int) sprintf("%u", crc32($room_id)));
-
+    
+	/*
     publish_event($pdo, $room_id, "room:initialized", [
         "world_id" => $world_id,
         "zone_id" => $zone_id,
         "_created" => now_iso_z()
     ]);
+	*/
 
-    // --- pickups ---
-    for ($i=0; $i<30; $i++) {
+    // -------------------------
+    // HARD-CODED SPAWN POINTS
+    // -------------------------
+    $spawn_item_points_base = [
+        ['x' => 25, 'y' => 87],
+        ['x' => 34, 'y' => 83],
+        ['x' => 42, 'y' => 64],
+        ['x' => 48, 'y' => 87],
+        ['x' => 57, 'y' => 48],
+        ['x' => 65, 'y' => 79],
+    ];
+
+    $spawn_morty_points_base = [
+        ['x' => 5,  'y' => 82],
+        ['x' => 12, 'y' => 84],
+        ['x' => 15, 'y' => 4],
+        ['x' => 24, 'y' => 57],
+        ['x' => 24, 'y' => 76],
+        ['x' => 32, 'y' => 76],
+        ['x' => 36, 'y' => 59],
+        ['x' => 37, 'y' => 76],
+        ['x' => 42, 'y' => 75],
+        ['x' => 47, 'y' => 68],
+        ['x' => 49, 'y' => 84],
+        ['x' => 55, 'y' => 79],
+    ];
+
+    // Working pools (we remove from these to avoid duplicates)
+    $spawn_item_pool  = $spawn_item_points_base;
+    $spawn_morty_pool = $spawn_morty_points_base;
+
+    // --- spawn pickups ---
+    for ($i = 0; $i < 3; $i++) {
+        // If you want 3 pickups and we have 6 points:
+        // refill when pool empties (means repeats AFTER all points used once)
+        if (empty($spawn_item_pool)) {
+            $spawn_item_pool = $spawn_item_points_base;
+        }
+
         $pickup_id = uuidv4();
-        $x = mt_rand(0, 70);
-        $y = mt_rand(0, 90);
+        $pt = spawn_pick_from_list($spawn_item_pool);
+        $x = $pt['x'];
+        $y = $pt['y'];
 
         publish_event($pdo, $room_id, "room:pickup-added", [
             "contents" => random_pickup_contents(),
@@ -122,10 +172,16 @@ function seed_room_entities(PDO $pdo, string $room_id, string $world_id, string 
 
     // --- wild morties ---
     $wild_pool = ["MortyDefault","MortyPrisoner","MortySurvivor","MortyCowboy","MortyBlueShirt","MortyNoEye"];
-    for ($i=0; $i<5; $i++) {
+
+    for ($i = 0; $i < 5; $i++) {
+        if (empty($spawn_morty_pool)) {
+            $spawn_morty_pool = $spawn_morty_points_base;
+        }
+
         $wid = uuidv4();
-        $x = mt_rand(0, 70);
-        $y = mt_rand(0, 90);
+        $pt = spawn_pick_from_list($spawn_morty_pool);
+        $x = $pt['x'];
+        $y = $pt['y'];
 
         $created = now_iso_z();
         publish_event($pdo, $room_id, "room:wild-morty-added", [
@@ -141,7 +197,7 @@ function seed_room_entities(PDO $pdo, string $room_id, string $world_id, string 
         ]);
     }
 
-    // --- bots ---
+    // --- bots --- (leave yours as-is)
     $bot_names = ["Ataraxy","Carpedge","ChloeTombola","Loxodromy","Barbirdation","EasementJustice"];
     $bot_avatars = ["AvatarTeacherRick","AvatarMoochJerry","AvatarBeth","AvatarRickSuperFan","AvatarRickDefault"];
     $bot_morties = ["MortyPoorHouse","MortyGunk","MortySoldier","MortyTyrantLizard","MortyAndroid"];
@@ -179,6 +235,7 @@ function seed_room_entities(PDO $pdo, string $room_id, string $world_id, string 
         ]);
     }
 }
+
 
 /**
  * Snapshot rebuild:

@@ -1,5 +1,8 @@
 <?php
-// collect-pickup
+// collect-pickup  (updates items + coins, returns totals like client expects)
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
@@ -37,8 +40,8 @@ function pick_rarity(): int {
 
 function loot_table_by_rarity(): array {
   return [
-    5 => ["ItemMegaSeedSpeed","ItemTinCan","ItemCircuitBoard","ItemCable","ItemPlutonicRock","ItemBacteriaCell"],
-    75 => ["ItemPoisonCure","ItemCable","ItemCircuitBoard"],
+    5   => ["ItemMegaSeedSpeed","ItemTinCan","ItemCircuitBoard","ItemCable","ItemPlutonicRock","ItemBacteriaCell"],
+    75  => ["ItemPoisonCure","ItemCable","ItemCircuitBoard"],
     100 => ["ItemSerum","ItemDarkEnergyBall","ItemCircuitBoard","ItemPlutonicRock"],
   ];
 }
@@ -55,17 +58,24 @@ function pick_item_id(int $rarity, array $excludeItemIds = []): string {
   return $pool[array_rand($pool)];
 }
 
-function pick_random_placement_like_examples(PDO $pdo, string $room_id): array {
-  $minX = 1; $maxX = 80;
-  $minY = 1; $maxY = 80;
+const PICKUP_SPAWN_POINTS = [
+  [25,87],
+  [34,83],
+  [42,64],
+  [48,87],
+  [57,48],
+  [65,79],
+];
 
+function pick_placement_from_hardcoded_points(PDO $pdo, string $room_id): array {
   $stmt = $pdo->prepare("
     SELECT payload_json
     FROM event_queue
     WHERE room_id = ?
       AND event_name = 'room:pickup-added'
+      AND pickup_id_collected_by_player_id IS NULL
     ORDER BY id DESC
-    LIMIT 250
+    LIMIT 500
   ");
   $stmt->execute([$room_id]);
 
@@ -79,25 +89,23 @@ function pick_random_placement_like_examples(PDO $pdo, string $room_id): array {
     }
   }
 
-  for ($i = 0; $i < 50; $i++) {
-    if (random_int(1, 100) <= 70) {
-      $x = random_int(45, $maxX);
-      $y = random_int(35, $maxY);
-    } else {
-      $x = random_int($minX, $maxX);
-      $y = random_int($minY, $maxY);
-    }
-
-    if (!isset($occupied["$x,$y"])) return [$x, $y];
+  $available = [];
+  foreach (PICKUP_SPAWN_POINTS as $pt) {
+    $key = $pt[0] . "," . $pt[1];
+    if (!isset($occupied[$key])) $available[] = $pt;
   }
 
-  return [random_int($minX, $maxX), random_int($minY, $maxY)];
+  if (empty($available)) $available = PICKUP_SPAWN_POINTS;
+
+  return $available[array_rand($available)];
 }
 
+/**
+ * Spawn payload should NOT embed player totals.
+ * We store only what the pickup gives ("amount").
+ * Totals are computed on collect.
+ */
 function random_pickup_contents(array $excludeItemIds = []): array {
-  // Never COIN-only:
-  // - single ITEM (no coin)
-  // - bundle: 2-4 ITEMs + COIN
   $kind = weighted_pick([
     ["value" => "single", "weight" => 70],
     ["value" => "bundle", "weight" => 30],
@@ -122,15 +130,89 @@ function random_pickup_contents(array $excludeItemIds = []): array {
     $contents[] = ["type" => "ITEM", "amount" => 1, "item_id" => $item, "rarity" => $r];
   }
 
-  $contents[] = ["type" => "COIN", "amount" => random_int(120, 250)];
+  $coinEarned = random_int(120, 250);
+  $contents[] = ["type" => "COIN", "amount" => $coinEarned];
+
   return $contents;
 }
 
 function make_random_pickup(PDO $pdo, string $room_id, array $excludeItemIds = []): array {
   return [
     "contents"  => random_pickup_contents($excludeItemIds),
-    "placement" => pick_random_placement_like_examples($pdo, $room_id),
+    "placement" => pick_placement_from_hardcoded_points($pdo, $room_id),
     "pickup_id" => uuidv4(),
+  ];
+}
+
+// ---------- DB grant helpers ----------
+const MAX_ITEM_QUANTITY = 10;
+
+function grantItemCapped(PDO $pdo, string $player_id, string $item_id, int $addQty): array {
+  $st = $pdo->prepare("SELECT id, quantity FROM owned_items WHERE player_id = ? AND item_id = ? LIMIT 1");
+  $st->execute([$player_id, $item_id]);
+  $row = $st->fetch(PDO::FETCH_ASSOC);
+
+  $cur = $row ? (int)$row["quantity"] : 0;
+
+  if ($cur >= MAX_ITEM_QUANTITY || $addQty <= 0) {
+    return [
+      "type" => "ITEM",
+      "item_id" => $item_id,
+      "quantity" => $cur,
+      "amount_received" => 0,
+      "amount" => 1
+    ];
+  }
+
+  $target = min(MAX_ITEM_QUANTITY, $cur + $addQty);
+  $added = max(0, $target - $cur);
+
+  if ($row) {
+    if ($added > 0) {
+      $up = $pdo->prepare("UPDATE owned_items SET quantity = ? WHERE id = ?");
+      $up->execute([$target, (int)$row["id"]]);
+    }
+  } else {
+    if ($added > 0) {
+      $ins = $pdo->prepare("INSERT INTO owned_items (player_id, item_id, quantity) VALUES (?, ?, ?)");
+      $ins->execute([$player_id, $item_id, $target]);
+    }
+  }
+
+  return [
+    "type" => "ITEM",
+    "item_id" => $item_id,
+    "quantity" => $target,
+    "amount_received" => $added,
+    "amount" => 1
+  ];
+}
+
+function grantCoins(PDO $pdo, string $player_id, int $add): array {
+  if ($add <= 0) {
+    $st = $pdo->prepare("SELECT coins FROM users WHERE player_id = ? LIMIT 1");
+    $st->execute([$player_id]);
+    $cur = (int)($st->fetchColumn() ?: 0);
+    return [
+      "type" => "COIN",
+      "quantity" => $cur,
+      "amount_received" => 0,
+      "amount" => 0
+    ];
+  }
+
+  $up = $pdo->prepare("UPDATE users SET coins = coins + ? WHERE player_id = ?");
+  $up->execute([$add, $player_id]);
+
+  $st = $pdo->prepare("SELECT coins FROM users WHERE player_id = ? LIMIT 1");
+  $st->execute([$player_id]);
+  $new = (int)($st->fetchColumn() ?: 0);
+
+  return [
+    "type" => "COIN",
+    "quantity" => $new,
+    "amount_received" => $add,
+    "amount" => $add
   ];
 }
 
@@ -148,12 +230,13 @@ if ($session_id === "" || $pickup_id === "") {
 try {
   $pdo->beginTransaction();
 
-  // 1) player + room
+  // 1) player + room + coins
   $stmt = $pdo->prepare("
-    SELECT player_id, room_id
+    SELECT player_id, room_id, coins
     FROM users
     WHERE session_id = ?
     LIMIT 1
+    FOR UPDATE
   ");
   $stmt->execute([$session_id]);
   $player = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -165,8 +248,8 @@ try {
     exit;
   }
 
-  $player_id = (string)$player["player_id"];
-  $room_id   = (string)$player["room_id"];
+  $player_id    = (string)$player["player_id"];
+  $room_id      = (string)$player["room_id"];
 
   if ($room_id === "" || $room_id === "0") {
     $pdo->rollBack();
@@ -175,9 +258,9 @@ try {
     exit;
   }
 
-  // 2) Find the pickup spawn row (fast: pickup_id column), lock it
+  // 2) lock the pickup spawn row
   $stmt = $pdo->prepare("
-    SELECT id, payload_json, pickup_id_collected_by_player_id
+    SELECT id, payload_json, pickup_id, pickup_id_collected_by_player_id
     FROM event_queue
     WHERE room_id = ?
       AND event_name = 'room:pickup-added'
@@ -188,7 +271,8 @@ try {
   ");
   $stmt->execute([$room_id, $pickup_id]);
   $spawnRow = $stmt->fetch(PDO::FETCH_ASSOC);
-
+  $pickup_id = $spawnRow['pickup_id'];
+  
   if (!$spawnRow) {
     $pdo->rollBack();
     http_response_code(404);
@@ -219,39 +303,50 @@ try {
     }
   }
 
-  // 3) Mark collected
-  $spawnId = (int)$spawnRow["id"];
-  $upd = $pdo->prepare("
-    UPDATE event_queue
-    SET pickup_id_collected_by_player_id = ?
-    WHERE id = ?
-      AND room_id = ?
-      AND pickup_id_collected_by_player_id IS NULL
-  ");
-  $upd->execute([$player_id, $spawnId, $room_id]);
+  // 4) apply rewards to DB + build response contents (ITEMs first, then COIN)
+  $outItems = [];
+  $outCoins = [];
 
-  if ($upd->rowCount() !== 1) {
-    $pdo->rollBack();
-    http_response_code(409);
-    echo json_encode(["error" => "Pickup already collected"], JSON_UNESCAPED_SLASHES);
-    exit;
+  foreach ($spawnPayload["contents"] as $c) {
+    if (!is_array($c)) continue;
+    $type = (string)($c["type"] ?? "");
+
+    if ($type === "ITEM") {
+      $item_id = (string)($c["item_id"] ?? "");
+      $amt = (int)($c["amount"] ?? 1);
+      if ($item_id === "") continue;
+
+      $outItems[] = grantItemCapped($pdo, $player_id, $item_id, $amt);
+      continue;
+    }
+
+    if ($type === "COIN") {
+      $amt = (int)($c["amount"] ?? 0);
+      $outCoins[] = grantCoins($pdo, $player_id, $amt);
+      continue;
+    }
   }
 
-  // 4) Broadcast removed (this inserts a new event row)
+  $outContents = array_merge($outItems, $outCoins);
+  
+  $del = $pdo->prepare("DELETE FROM event_queue WHERE room_id = ? AND pickup_id = ? AND event_name = 'room:pickup-added' LIMIT 1");
+  $del->execute([$room_id, $pickup_id]);
+  
+  // 5) broadcast removed
   publish_event($pdo, (string)$room_id, "room:pickup-removed", [
     "pickup_id" => (string)$pickup_id
   ]);
 
-  // 5) Spawn ONE new pickup
+  // 6) spawn ONE new pickup
   $newPickup = make_random_pickup($pdo, (string)$room_id, $exclude);
   publish_event($pdo, (string)$room_id, "room:pickup-added", $newPickup);
 
   $pdo->commit();
 
-  // 6) Response = actual contents picked up
+  // 7) response: totals after updating DB
   echo json_encode([
     "pickup_id" => (string)$pickup_id,
-    "contents"  => $spawnPayload["contents"]
+    "contents"  => $outContents
   ], JSON_UNESCAPED_SLASHES);
 
 } catch (Throwable $e) {

@@ -148,7 +148,7 @@ data: [{"type":"ATTACK","attacker_player_id":"dfd1bb4f-5a40-4841-ac32-d4ae2ba72b
 // ---------- Build battle:turn-result payload ----------
 $battle_payload = [
     "battle_id" => $battle_id,
-    "outcome"   => $outcome,
+    "outcome"   => "RUN",
 
     "turn_datas" => [
         [
@@ -241,6 +241,6 @@ $battle_payload = [
 ];
 
 // ---------- 6) Publish event ----------
-publish_event($pdo, $room_id, "battle:turn-result", $battle_payload);
+publish_event($pdo, $room_id, "battle:turn-result", $battle_payload, (string)$player_id);
 
 echo json_encode(["success" => true], JSON_UNESCAPED_SLASHES);

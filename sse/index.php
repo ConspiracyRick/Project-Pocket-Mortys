@@ -1,5 +1,6 @@
 <?php
-// sse stream
+// sse-stream
+// Streams session + room events via SSE.
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -15,11 +16,12 @@ header('X-Accel-Buffering: no');
 
 require __DIR__ . "/../pocket_f4894h398r8h9w9er8he98he.php";
 require __DIR__ . "/../lib/auth.php";
-require __DIR__ . "/../lib/events.php";
+require __DIR__ . "/../lib/events.php"; // provides sse_send()
 
-// ---- local SSE sender that supports id: ----
+// ---------------- SSE HELPERS ----------------
+
 function sse_send_id(string $event, string $dataJson, ?int $id = null): void {
-    //if ($id !== null) echo "id: {$id}\n";
+    //if ($id !== null) echo "id: {$id}\n"; // enable if you want EventSource resume support
     echo "event: {$event}\n";
     echo "data: {$dataJson}\n\n";
     @ob_flush(); @flush();
@@ -31,9 +33,34 @@ function decode_jwt_payload($jwt) {
     if (count($parts) < 2) return null;
     return json_decode(base64url_decode($parts[1]), true);
 }
-function payload_player_id($json) {
-    $d = json_decode($json, true);
-    return (is_array($d) && isset($d["player_id"])) ? (string)$d["player_id"] : null;
+
+// Only used as fallback if event_queue.player_id is NULL for private events
+function payload_involves_player(string $payloadJson, string $player_id): bool {
+    $d = json_decode($payloadJson, true);
+    if (!is_array($d)) return false;
+
+    $keys = [
+        "player_id",
+        "attacker_player_id",
+        "defender_player_id",
+        "challenger_player_id",
+        "challenged_player_id",
+        "owner_player_id",
+    ];
+
+    foreach ($keys as $k) {
+        if (isset($d[$k]) && (string)$d[$k] === $player_id) return true;
+    }
+
+    if (isset($d["turn_datas"]) && is_array($d["turn_datas"])) {
+        foreach ($d["turn_datas"] as $t) {
+            if (!is_array($t)) continue;
+            if (isset($t["attacker_player_id"]) && (string)$t["attacker_player_id"] === $player_id) return true;
+            if (isset($t["defender_player_id"]) && (string)$t["defender_player_id"] === $player_id) return true;
+        }
+    }
+
+    return false;
 }
 
 // Cursor stored in users table
@@ -46,19 +73,80 @@ function cursor_set(PDO $pdo, string $player_id, int $last_id): void {
     $q = $pdo->prepare("UPDATE users SET last_event_id = ?, last_seen = NOW() WHERE player_id = ?");
     $q->execute([$last_id, $player_id]);
 }
+function room_max_event_id(PDO $pdo, string $room_id): int {
+    $q = $pdo->prepare("SELECT COALESCE(MAX(id), 0) FROM event_queue WHERE room_id = ?");
+    $q->execute([$room_id]);
+    return (int)$q->fetchColumn();
+}
 
-// --- auth ---
-$token = $_GET['token'] ?? null;
+/**
+ * Normalize room:wild-morty-added payload so client always gets clickable WORLD entity.
+ * Many DB rows are the "short shape" missing state/division/etc.
+ */
+function normalize_wild_morty_added(string $payloadJson): string {
+    $d = json_decode($payloadJson, true);
+    if (!is_array($d)) return $payloadJson;
+
+    $wildId  = isset($d["wild_morty_id"]) ? (string)$d["wild_morty_id"] : "";
+    $mortyId = isset($d["morty_id"]) ? (string)$d["morty_id"] : "";
+    $place   = $d["placement"] ?? null;
+
+    if ($wildId === "" || $mortyId === "" || !is_array($place) || count($place) !== 2) {
+        return $payloadJson;
+    }
+
+    $placement = [(int)$place[0], (int)$place[1]];
+
+    $state   = (isset($d["state"]) && $d["state"] !== "" && $d["state"] !== null) ? (string)$d["state"] : "WORLD";
+    $variant = (isset($d["variant"]) && $d["variant"] !== "" && $d["variant"] !== null) ? (string)$d["variant"] : "Normal";
+
+    $division = 1;
+    if (isset($d["division"])) {
+        $division = (int)$d["division"];
+        if ($division <= 0) $division = 1;
+    }
+
+    $shinyIfPotion = false;
+    if (isset($d["shiny_if_potion"])) {
+        $shinyIfPotion = (bool)$d["shiny_if_potion"];
+    }
+
+    $created = isset($d["_created"]) ? (string)$d["_created"] : "";
+    $updated = isset($d["_updated"]) ? (string)$d["_updated"] : "";
+
+    if ($created === "" || $updated === "") {
+        $now = gmdate("Y-m-d\\TH:i:s") . ".000Z";
+        if ($created === "") $created = $now;
+        if ($updated === "") $updated = $now;
+    }
+
+    $out = [
+        "morty_id" => $mortyId,
+        "placement" => $placement,
+        "state" => $state,
+        "division" => $division,
+        "variant" => $variant,
+        "shiny_if_potion" => $shinyIfPotion,
+        "_created" => $created,
+        "_updated" => $updated,
+        "wild_morty_id" => $wildId,
+    ];
+
+    return json_encode($out, JSON_UNESCAPED_SLASHES);
+}
+
+// -------------------- AUTH --------------------
+
+$token   = $_GET['token'] ?? null;
 $profile = $token ? decode_jwt_payload($token) : null;
 
-$session_id = $profile['session_id'] ?? "";
+$session_id = (string)($profile['session_id'] ?? "");
 if ($session_id === "") {
     http_response_code(400);
     sse_send_id("error", json_encode(["error" => "Missing session_id"], JSON_UNESCAPED_SLASHES));
     exit;
 }
 
-// Pull player_id + user fields directly from users table (what you wanted)
 $stmt = $pdo->prepare("
     SELECT player_id, username, level, tags, room_id, player_avatar_id, state, COALESCE(last_event_id, 0) AS last_event_id
     FROM users
@@ -84,7 +172,9 @@ if (is_string($tags)) {
     $tags = [];
 }
 
-$ping_url = $profile['ping_url'] ?? "https://game.conspiracyrick.com/session/ping-dynamic";
+$ping_url = (string)($profile['ping_url'] ?? "https://game.conspiracyrick.com/session/ping-dynamic");
+
+// -------------------- SESSION START --------------------
 
 $session = [
     "player_id" => $player_id,
@@ -108,90 +198,137 @@ $session = [
     "owned_morty_limit" => 750
 ];
 
-// Use sse_send from your events.php for non-id events
 sse_send("session:start", json_encode($session, JSON_UNESCAPED_SLASHES));
 
-// wait for room (using users.room_id like you asked)
-$room_id = null;
+// -------------------- WAIT FOR ROOM --------------------
+
+$room_id = "";
 $last_keepalive = time();
 
 while (!connection_aborted()) {
-    $stmt = $pdo->prepare("SELECT room_id FROM users WHERE player_id = ? LIMIT 1");
-    $stmt->execute([$player_id]);
-    $room_id = (string)$stmt->fetchColumn();
+    $st = $pdo->prepare("SELECT room_id FROM users WHERE player_id = ? LIMIT 1");
+    $st->execute([$player_id]);
+    $room_id = (string)$st->fetchColumn();
 
     if ($room_id !== "" && $room_id !== "0") break;
 
-    $now = time();
-    if (($now - $last_keepalive) >= 25) {
+    if ((time() - $last_keepalive) >= 25) {
         sse_send("session:keep-alive", "0");
-        $last_keepalive = $now;
+        $last_keepalive = time();
     }
     usleep(250000);
 }
-if (!$room_id) exit;
 
-// initial snapshot: other users (no self)
-$u = $pdo->prepare("SELECT player_id, username, player_avatar_id, level, state FROM users WHERE room_id = ?");
-$u->execute([$room_id]);
-foreach ($u->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    if ((string)$row["player_id"] === $player_id) continue;
-    sse_send("room:user-added", json_encode([
-        "player_id" => (string)$row["player_id"],
-        "username" => (string)$row["username"],
-        "player_avatar_id" => (string)$row["player_avatar_id"],
-        "level" => (int)$row["level"],
-        "state" => (string)$row["state"],
-    ], JSON_UNESCAPED_SLASHES));
-}
+if ($room_id === "" || $room_id === "0") exit;
 
-// initial snapshot: other users user-modified (no self)
-$a = $pdo->prepare("SELECT player_id, username, player_avatar_id, level, state FROM users WHERE room_id = ?");
-$a->execute([$room_id]);
-foreach ($a->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    if ((string)$row["player_id"] === $player_id) continue;
-    sse_send("room:user-modified", json_encode([
-        "player_id" => (string)$row["player_id"],
-        "username" => (string)$row["username"],
-        "player_avatar_id" => (string)$row["player_avatar_id"],
-        "level" => (int)$row["level"],
-        "state" => (string)$row["state"],
-    ], JSON_UNESCAPED_SLASHES));
-}
+// -------------------- RESUME OR FRESH CONNECT? --------------------
 
-// choose last_id
-$last_id = 0;
-
+$client_last_event_id = null;
 if (!empty($_SERVER['HTTP_LAST_EVENT_ID']) && ctype_digit($_SERVER['HTTP_LAST_EVENT_ID'])) {
-    $last_id = (int)$_SERVER['HTTP_LAST_EVENT_ID'];
-} else {
-    // Use users.last_event_id (you removed room_stream_cursor)
-    $last_id = cursor_get($pdo, $player_id);
-    if ($last_id <= 0) {
-        // emergency fallback: start from current max so they don't get spammed
-        $max = $pdo->prepare("SELECT COALESCE(MAX(id), 0) FROM event_queue WHERE room_id = ?");
-        $max->execute([$room_id]);
-        $last_id = (int)$max->fetchColumn();
-        cursor_set($pdo, $player_id, $last_id);
-    }
+    $client_last_event_id = (int)$_SERVER['HTTP_LAST_EVENT_ID'];
 }
+if ($client_last_event_id === null && isset($_GET['since']) && ctype_digit((string)$_GET['since'])) {
+    $client_last_event_id = (int)$_GET['since'];
+}
+
+$fresh_connect = ($client_last_event_id === null);
+
+// -------------------- INITIAL SNAPSHOT (ONLY ON FRESH CONNECT) --------------------
+
+if ($fresh_connect) {
+    // other users in room (no self)
+    $u = $pdo->prepare("
+        SELECT player_id, username, player_avatar_id, level, state
+        FROM users
+        WHERE room_id = ?
+          AND last_seen >= (NOW() - INTERVAL 5 MINUTE)
+    ");
+    $u->execute([$room_id]);
+
+    while ($row = $u->fetch(PDO::FETCH_ASSOC)) {
+        if ((string)$row["player_id"] === $player_id) continue;
+
+        sse_send("room:user-added", json_encode([
+            "player_id" => (string)$row["player_id"],
+            "username" => (string)$row["username"],
+            "player_avatar_id" => (string)$row["player_avatar_id"],
+            "level" => (int)$row["level"],
+            "state" => (string)($row["state"] ?: "WORLD"),
+        ], JSON_UNESCAPED_SLASHES));
+    }
+
+    // pickups alive only
+    $p = $pdo->prepare("
+        SELECT id, payload_json
+        FROM event_queue
+        WHERE room_id = ?
+          AND event_name = 'room:pickup-added'
+          AND pickup_id_collected_by_player_id IS NULL
+        ORDER BY id ASC
+    ");
+    $p->execute([$room_id]);
+    while ($row = $p->fetch(PDO::FETCH_ASSOC)) {
+        sse_send_id("room:pickup-added", (string)$row["payload_json"], (int)$row["id"]);
+    }
+
+    // wild mortys - normalize payload so they become interactable
+    $w = $pdo->prepare("
+        SELECT id, payload_json
+        FROM event_queue
+        WHERE room_id = ?
+          AND event_name = 'room:wild-morty-added'
+        ORDER BY id ASC
+    ");
+    $w->execute([$room_id]);
+    while ($row = $w->fetch(PDO::FETCH_ASSOC)) {
+        $payload = normalize_wild_morty_added((string)$row["payload_json"]);
+        sse_send_id("room:wild-morty-added", $payload, (int)$row["id"]);
+    }
+
+    // bots
+    $b = $pdo->prepare("
+        SELECT id, payload_json
+        FROM event_queue
+        WHERE room_id = ?
+          AND event_name = 'room:bot-added'
+        ORDER BY id ASC
+    ");
+    $b->execute([$room_id]);
+    while ($row = $b->fetch(PDO::FETCH_ASSOC)) {
+        sse_send_id("room:bot-added", (string)$row["payload_json"], (int)$row["id"]);
+    }
+
+    // After snapshot seed, set cursor to current max so we don't replay snapshot rows
+    $last_id = room_max_event_id($pdo, $room_id);
+    cursor_set($pdo, $player_id, $last_id);
+} else {
+    $last_id = (int)$client_last_event_id;
+    cursor_set($pdo, $player_id, $last_id);
+}
+
+// -------------------- MAIN STREAM LOOP --------------------
 
 $keepalive_interval_sec = 30;
 $last_keepalive = time();
 
+// These events should only be delivered to the triggering / involved player.
+// (We primarily use event_queue.player_id to decide.)
+$privateEvents = ["battle:start","battle:move-timer-started","battle:turn-result"];
+
 while (!connection_aborted()) {
 
-    // Update last_seen (and keep last_event_id current periodically via cursor_set)
+    // touch presence
     $pdo->prepare("UPDATE users SET last_seen = NOW() WHERE player_id = ?")
         ->execute([$player_id]);
 
+    // IMPORTANT: also fetch event_queue.player_id
     $stmt = $pdo->prepare("
-      SELECT id, event_name, payload_json
-      FROM event_queue
-      WHERE room_id = ?
-        AND id > ?
-      ORDER BY id ASC
-      LIMIT 200
+        SELECT id, event_name, payload_json, player_id AS target_player_id
+        FROM event_queue
+        WHERE room_id = ?
+          AND id > ?
+        ORDER BY id ASC
+        LIMIT 200
     ");
     $stmt->execute([$room_id, $last_id]);
 
@@ -201,34 +338,38 @@ while (!connection_aborted()) {
         $eventName = (string)$row["event_name"];
         $payload   = (string)$row["payload_json"];
         $eid       = (int)$row["id"];
+        $targetPid = (string)($row["target_player_id"] ?? "");
 
-        // filter self events
-        if (
-            in_array($eventName, [
-                "room:user-added",
-                "room:user-modified",
-                "room:user-state-changed"
-            ], true)
-            && payload_player_id($payload) === $player_id
-        ) {
-            $last_id = $eid;
-            continue;
+        // ---- PRIVATE EVENT FILTERING ----
+        if (in_array($eventName, $privateEvents, true)) {
+            // Strong rule: if DB has a target player, ONLY send to that player.
+            if ($targetPid !== "" && $targetPid !== $player_id) {
+                $last_id = $eid;
+                continue;
+            }
+
+            // Fallback: if DB target is empty, try to infer from payload
+            if ($targetPid === "" && !payload_involves_player($payload, $player_id)) {
+                $last_id = $eid;
+                continue;
+            }
         }
 
-        // send with id: so EventSource can resume correctly
-        sse_send_id($eventName, $payload, $eid);
+        // Normalize wild morty payload shape live too
+        if ($eventName === "room:wild-morty-added") {
+            $payload = normalize_wild_morty_added($payload);
+        }
 
+        sse_send_id($eventName, $payload, $eid);
         $last_id = $eid;
         $sent = true;
     }
 
-    // Persist cursor in users table
     cursor_set($pdo, $player_id, $last_id);
 
-    $now = time();
-    if (!$sent && ($now - $last_keepalive) >= $keepalive_interval_sec) {
+    if (!$sent && (time() - $last_keepalive) >= $keepalive_interval_sec) {
         sse_send("session:keep-alive", "0");
-        $last_keepalive = $now;
+        $last_keepalive = time();
     }
 
     usleep(300000);

@@ -1,5 +1,4 @@
 <?php
-/*
 // register
 header("Content-Type: application/json; charset=utf-8");
 header("X-Powered-By: Express");
