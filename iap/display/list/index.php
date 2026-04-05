@@ -7,7 +7,7 @@ header("Vary: Accept-Encoding");
 echo '{
 	"products": [{
 		"iap_id": "IAPMPPicklePack",
-		"featured": true,
+		"featured": false,
 		"onsale": false
 	}, {
 		"iap_id": "IAPMPCouponPack15",
@@ -15,15 +15,15 @@ echo '{
 		"onsale": false
 	}, {
 		"iap_id": "IAPMPDimension5Pack",
-		"featured": true,
+		"featured": false,
 		"onsale": false
 	}, {
 		"iap_id": "IAPMPDimension6Pack",
-		"featured": true,
+		"featured": false,
 		"onsale": false
 	}, {
 		"iap_id": "IAPMPDimension7Pack",
-		"featured": true,
+		"featured": false,
 		"onsale": false
 	}, {
 		"iap_id": "IAPMPCouponPack300",
@@ -31,7 +31,7 @@ echo '{
 		"onsale": false
 	}, {
 		"iap_id": "IAPSPPicklePack",
-		"featured": true,
+		"featured": false,
 		"onsale": false
 	}, {
 		"iap_id": "IAPSPCouponPack05",
@@ -67,7 +67,7 @@ echo '{
 		"onsale": false
 	}, {
 		"iap_id": "IAPSPJuly4thPack",
-		"featured": true,
+		"featured": false,
 		"onsale": false
 	}]
 }';

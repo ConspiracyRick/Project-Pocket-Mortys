@@ -1,9 +1,10 @@
-Options -Indexes
+#Options -Indexes
 RewriteEngine On
 
 # Disable Apache's automatic slash redirect for this path
 DirectorySlash Off
 
+#when behind proxy
 RewriteCond %{HTTP:X-Forwarded-Proto} =https
 # debug
 #RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
@@ -228,8 +229,47 @@ RewriteCond %{REQUEST_URI} ^/session/battle/move$
 RewriteRule ^session/battle/move$ /session/battle/move/ [L]
 
 
+RewriteCond %{REQUEST_URI} ^/session/owned_morties/learn-attacks$
+RewriteRule ^session/owned_morties/learn-attacks$ /session/owned_morties/learn-attacks/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/trading/get-trades$
+RewriteRule ^trading/get-trades$ /trading/get-trades/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/trading/request-morty$
+RewriteRule ^trading/request-morty$ /trading/request-morty/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/trading/cancel-trade$
+RewriteRule ^trading/cancel-trade$ /trading/cancel-trade/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/trading/request-morty$
+RewriteRule ^trading/request-morty$ /trading/request-morty/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/trading/offer-response$
+RewriteRule ^trading/offer-response$ /trading/offer-response/ [L]
+
+
+RewriteCond %{REQUEST_URI} ^/trading/offer-morty$
+RewriteRule ^trading/offer-morty$ /trading/offer-morty/ [L]
+
+
 RewriteCond %{REQUEST_URI} ^/sp/gacha-info$
 RewriteRule ^sp/gacha-info$ /sp/gacha-info/ [L]
+
+RewriteCond %{REQUEST_URI} ^/api/login$
+RewriteRule ^api/login$ /api/login/ [L]
+
+RewriteCond %{REQUEST_URI} ^/api/games$
+RewriteRule ^api/games$ /api/games/ [L]
+
+RewriteCond %{REQUEST_URI} ^/api/play$
+RewriteRule ^api/play$ /api/play/ [L]
+
+
 
 <Files "manifest.json">
     ForceType application/octet-stream
@@ -242,7 +282,7 @@ RewriteRule ^manifest\.json$ - [L]
 RewriteRule ^rat\.json$ - [L]
 
 # allow your API paths
-RewriteRule ^(phpmyadmin|sp|lib|gacha-info|is-gdpr|AssetBundles|AssetBundle-android:1011-ios:1011__7b175320|Aliases|rat|Android|Status|user|login|sse|session|ping-dynamic|inappdeletion|get-account-data-storage-time|iap|display|list|morty|slots|config|arena|rewards|pending|decks|trading|event|events|moving-mortys|lte|fyre|promos|shard)/ - [L]
+RewriteRule ^(api|phpmyadmin|sp|lib|gacha-info|is-gdpr|AssetBundles|AssetBundle-android:1011-ios:1011__7b175320|Aliases|rat|Android|Status|user|login|sse|session|ping-dynamic|inappdeletion|get-account-data-storage-time|iap|display|list|morty|slots|config|arena|rewards|pending|decks|trading|event|events|moving-mortys|lte|fyre|promos|shard)/ - [L]
 
 # block everything else
 RewriteRule ^ - [F,L]

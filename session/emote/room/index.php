@@ -63,6 +63,30 @@ try {
     "player_id" => $player_id,
     "emote" => $emote
   ]);
+  
+// 🔥 SEND TO UDP SERVER (FIXED PORT 13000)
+$socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+
+$data = json_encode([
+    "type" => "emote",
+    "player_id" => $player_id,
+    "room_id" => $room_id,
+    "emote" => $emote
+]);
+
+socket_sendto(
+    $socket,
+    $data,
+    strlen($data),
+    0,
+    "127.0.0.1",
+    13000
+);
+
+socket_close($socket);
+
+// Debug log (optional)
+error_log("EMOTE SENT: " . $data);
 
   echo json_encode(["success" => true], JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {

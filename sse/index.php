@@ -175,7 +175,7 @@ if (is_string($tags)) {
 $ping_url = (string)($profile['ping_url'] ?? "https://game.conspiracyrick.com/session/ping-dynamic");
 
 // -------------------- SESSION START --------------------
-
+// "server_instance" => "/ip-10-100-0-46/1/1143",
 $session = [
     "player_id" => $player_id,
     "session_id" => $session_id,
@@ -185,7 +185,7 @@ $session = [
     "ping_interval" => 30,
     "ping_url" => $ping_url,
     "keep_alive" => 30,
-    "server_instance" => "/ip-10-100-0-46/1/1143",
+    "server_instance" => "/ip-54-196-181-23/1/1143",
     "worlds" => [
         ["world_id"=>"1","player_level"=>["min"=>1,"max"=>50]],
         ["world_id"=>"2","player_level"=>["min"=>5,"max"=>50]],

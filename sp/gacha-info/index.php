@@ -4,10 +4,13 @@ header("X-Powered-By: Express");
 header("Access-Control-Allow-Origin: *");
 header("Vary: Accept-Encoding");
 
+echo '{"gacha_promo":{"gacha_promo_id":"GachaSPPromo20230411_2026","period":[1774881600,1775485800],"image_url":"https://assets.bps-pmnet.com/Media/Promos/GachaBackgrounds/Cust1605801386392.png","drop_chance":"0.06","gacha_promo_content":[{"morty_id":"MortyEvilRabbit"},{"morty_id":"MortyViolent"},{"morty_id":"MortyEvil"},{"morty_id":"MortyCronenberg"},{"morty_id":"MortyVoltamatron"}]},"drop_rates":[80,12,6,2],"gacha_promo_chance":"0.06","gacha":[{"gacha_id":"GachaSPProduct3","cost":0,"gacha_content":[{"quantity":1,"reward":"MORTY","parameters":{"division_guarantee":4}},{"quantity":2,"reward":"MORTY","parameters":{"division_guarantee":3}},{"quantity":3,"reward":"MORTY","parameters":null},{"quantity":4,"reward":"MORTY","parameters":{"division_guarantee":2}},{"quantity":10,"reward":"ITEM","parameters":{"ids":["ItemMortyChip","ItemPureSerum","ItemHalzinger","ItemPureHalzinger","ItemFullRecover","ItemMrMeeseek","ItemMegaSeedAttack","ItemMegaSeedDefence","ItemMegaSeedSpeed","ItemMegaSeedLevelUp"]}}]},{"gacha_id":"GachaSPProduct2","cost":0,"gacha_content":[{"quantity":1,"reward":"MORTY","parameters":{"division_guarantee":3}},{"quantity":4,"reward":"ITEM","parameters":{"ids":["ItemMortyChip","ItemPureSerum","ItemHalzinger","ItemPureHalzinger","ItemFullRecover","ItemMrMeeseek","ItemMegaSeedAttack","ItemMegaSeedDefence","ItemMegaSeedSpeed","ItemMegaSeedLevelUp"]}},{"quantity":3,"reward":"MORTY","parameters":{"division_guarantee":2}},{"quantity":3,"reward":"MORTY","parameters":null}]},{"gacha_id":"GachaSPProduct1","cost":0,"gacha_content":[{"quantity":1,"reward":"MORTY","parameters":null},{"quantity":1,"reward":"ITEM","parameters":{"ids":["ItemMortyChip","ItemPureSerum","ItemHalzinger","ItemPureHalzinger","ItemFullRecover","ItemMrMeeseek","ItemMegaSeedAttack","ItemMegaSeedDefence","ItemMegaSeedSpeed","ItemMegaSeedLevelUp"]}},{"quantity":2,"reward":"MORTY","parameters":{"division_guarantee":2}}]}]}';
+
+/*
 echo '{
 	"gacha_promo": {
 		"gacha_promo_id": "GachaMPPromo20230207_2026",
-		"period": [1769438400, 1770042600],
+		"period": [1769438400, 2970042600],
 		"image_url": "https://assets.bps-pmnet.com/Media/Promos/GachaBackgrounds/Cust1605801458922.png",
 		"drop_chance": "0.06",
 		"gacha_promo_content": [{
@@ -425,4 +428,4 @@ echo '{
 		"level": [100, 100]
 	}]
 }';
-
+*/
