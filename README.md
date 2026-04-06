@@ -40,20 +40,25 @@ Early adopters should expect:
 - MySQL or MariaDB
 - Apache or Nginx
 
-## TO DO
+## To Do
 - Battle & catch mortys
 - Battle Bots
 - Battle friends
 - Raid & other event Battles
+- Use Items
+- Release Morties
+- Lock Morties
+- Crafting
+- Challenges
+
+## Completed
 - <s>Fix item spawning</s>
 - <s>Fix Morties roaming</s>
-- Evolve Mortys
+- <s>Evolve Mortys</s>
 - <s>Healing</s>
 - <s>Buy deck slots</s>
 - <s>Learn Attacks</s>
-- Crafting
 - <s>Swap Stop</s>
-- Challenges
 - <s>Salesman Rick's</s>
 
 ## Legal Disclaimer
