@@ -257,6 +257,9 @@ RewriteCond %{REQUEST_URI} ^/trading/offer-morty$
 RewriteRule ^trading/offer-morty$ /trading/offer-morty/ [L]
 
 
+RewriteCond %{REQUEST_URI} ^/session/use-item$
+RewriteRule ^session/use-item$ /session/use-item/ [L]
+
 RewriteCond %{REQUEST_URI} ^/sp/gacha-info$
 RewriteRule ^sp/gacha-info$ /sp/gacha-info/ [L]
 
