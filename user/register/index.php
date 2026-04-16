@@ -5,6 +5,9 @@ header("X-Powered-By: Express");
 header("Access-Control-Allow-Origin: *");
 header("Vary: Accept-Encoding");
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require '../../pocket_f4894h398r8h9w9er8he98he.php';
 
 $input = file_get_contents('php://input');
@@ -73,7 +76,7 @@ exit;
 
 if (!password_verify($username, $user["recovery_code_hash"])) {
 // if passes the recovery code check then only accept certain characters.
-if (preg_match('/^[a-zA-Z]+$/', $username)) {
+if (preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
 } else {
 	http_response_code(400);
 	echo json_encode([

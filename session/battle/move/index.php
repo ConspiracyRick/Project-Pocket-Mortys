@@ -58,7 +58,7 @@ if (!$battle) {
 // HELPERS
 // ========================
 function calculate_damage() {
-    return rand(25, 60);
+    return rand(5, 10);
 }
 
 function get_ai_move() {
@@ -234,6 +234,15 @@ if ($outcome === "CONTINUE") {
         "battle_id" => $battle_id,
         "timeout" => 30
     ], $player_id);
+}
+
+// ========================
+// IF LOSE
+// ========================
+if ($outcome === "LOSE") {
+$wild_morty_id = $battle["opponent_active_morty"];
+publish_event($pdo, $room_id, "room:wild-morty-state-changed", ["wild_morty_id"=>$wild_morty_id,"state"=>"WORLD"]);
+publish_event($pdo, $room_id, "room:user-state-changed", ["player_id"=>$player_id,"state"=>"WORLD"]);
 }
 
 // ========================

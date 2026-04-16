@@ -7,11 +7,11 @@
 
 <p align="center">
   <a href="https://github.com/ConspiracyRick/Pocket-Mortys-Public-Server/releases">
-    <img src="https://img.shields.io/github/v/release/ConspiracyRick/Pocket-Mortys-Public-Server?style=flat-square" />
+    <img src="https://img.shields.io/github/v/release/ConspiracyRick/Pocket-Mortys-Public-Server?style=for-the-badge&amp;logo=github" />
   </a>
-  <img src="https://img.shields.io/badge/status-active%20development-blue?style=flat-square" />
-  <img src="https://img.shields.io/badge/php-8.x-777bb4?style=flat-square" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
+  <img src="https://img.shields.io/badge/status-active%20development-blue?style=for-the-badge&amp;logo=github" />
+  <img src="https://img.shields.io/badge/php-8.x-777bb4?style=for-the-badge&amp;logo=github" />
+  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge&amp;logo=github" />
 </p>
 
 ## Overview

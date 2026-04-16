@@ -262,15 +262,17 @@ $playerPayload = [
     "move_log"=>$moveLog
 ];
 
+$wild_owned_PlayerId = uuidv4();
+
 $opponentPayload = [
-    "player_id"=>"317D0000-0000-0000-0000-000000000001",
+    "player_id"=>$wild_owned_PlayerId,
     "username"=>"AWILDMORTY",
     "player_avatar_id"=>"NOAVATAR",
-    "owned_morties"=>[["owned_morty_id"=>"00000000-0000-0000-0000-000000000002","morty_id"=>$wildMortyId,"level"=>37,"xp"=>50653,"hp"=>$opponentHP,"variant"=>$wildPayload["variant"]??"Normal","hp_stat"=>$opponentHP]],
+    "owned_morties"=>[["owned_morty_id"=>$wild_morty_id,"morty_id"=>$wildMortyId,"level"=>37,"xp"=>50653,"hp"=>$opponentHP,"variant"=>$wildPayload["variant"]??"Normal","hp_stat"=>$opponentHP]],
     "streak"=>0,
     "shiny_if_potion"=>to_bool($wildPayload["shiny_if_potion"]??false),
     "_meta"=>["isPlayerInDB"=>false,"isControlledByAI"=>true,"isRaidBoss"=>false],
-    "active_owned_morty"=>"00000000-0000-0000-0000-000000000002"
+    "active_owned_morty"=>$wild_morty_id
 ];
 
 // =========================
