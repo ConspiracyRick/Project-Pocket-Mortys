@@ -65,6 +65,13 @@ function get_ai_move() {
     $moves = ["AttackBatteringRam","AttackToxic","AttackVileSpew"];
     return $moves[array_rand($moves)];
 }
+function uuidv4(): string {
+    $data = random_bytes(16);
+    $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+    $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
 
 // ========================
 // TURN LOGIC
@@ -72,42 +79,112 @@ function get_ai_move() {
 $outcome = "CONTINUE";
 $turn_datas = [];
 
-$player_hp = (int)$battle["player_hp"];
-$enemy_hp  = (int)$battle["opponent_hp"];
+$player_hp = isset($battle["player_hp"]) ? (int)$battle["player_hp"] : 0;
+$enemy_hp  = isset($battle["opponent_hp"]) ? (int)$battle["opponent_hp"] : 0;
 
 $ai_move = get_ai_move();
 
 // ========================
-// ITEM (CATCH)
+// ITEM (CATCH) — STRICT FORMAT
 // ========================
 if ($type === "ITEM" && $move_id === "ItemMortyChip") {
 
-    $success = rand(1,100) > 60;
+    $success = rand(1,100) > 40;
 
+    // opponent + wild morty references
+    $opponent_id = $battle["opponent_id"];
+    $wild_owned_morty_id = $battle["opponent_active_morty"];
+    $wild_morty_id = $battle["wild_morty_id"] ?? "UnknownMorty";
+
+    // reduce player item count
+    //$stmt = $pdo->prepare("UPDATE owned_items SET quantity = quantity - 1 WHERE player_id=? AND item_id='ItemMortyChip'");
+    //$stmt->execute([$player_id]);
+
+    // get updated item count
+    $stmt = $pdo->prepare("SELECT quantity FROM owned_items WHERE player_id=? AND item_id='ItemMortyChip'");
+    $stmt->execute([$player_id]);
+    $itemRow = $stmt->fetch(PDO::FETCH_ASSOC);
+    $remaining = (int)($itemRow["quantity"] ?? 0);
+
+    // base turn data (STRICT)
     $turn_datas[] = [
         "type" => "ITEM",
         "attacker_player_id" => $player_id,
+        "defender_player_id" => $opponent_id,
         "item_id" => "ItemMortyChip",
+        "owned_morty_id" => $wild_owned_morty_id,
         "success" => $success
     ];
 
     if ($success) {
+
         $outcome = "CAUGHT";
 
+        // ========================
+        // CREATE OWNED MORTY (SIMULATED CAPTURE)
+        // ========================
+        $new_owned_morty_id = uuidv4();
+
+        $new_morty = [
+            "owned_morty_id" => $new_owned_morty_id,
+            "player_id" => $player_id,
+            "morty_id" => $wild_morty_id,
+            "level" => rand(30,50),
+            "xp" => rand(50000,90000),
+            "hp" => rand(100,150),
+            "hp_stat" => rand(100,150),
+            "attack_stat" => rand(60,90),
+            "defence_stat" => rand(60,90),
+            "speed_stat" => rand(60,90),
+            "variant" => "Normal",
+            "owned_attacks" => [
+                ["attack_id"=>"AttackFanArt","pp"=>5,"position"=>0],
+                ["attack_id"=>"AttackWetTongue","pp"=>5,"position"=>1],
+                ["attack_id"=>"AttackScratchAndSniff","pp"=>5,"position"=>2],
+                ["attack_id"=>"AttackLick","pp"=>18,"position"=>3],
+            ]
+        ];
+
+        // ========================
+        // SEND EXACT CLIENT FORMAT
+        // ========================
         publish_event($pdo, $room_id, "battle:turn-result", [
             "battle_id" => $battle_id,
-            "outcome" => $outcome,
+            "outcome" => "CAUGHT",
             "turn_datas" => $turn_datas,
             "player_datas" => [
                 "player" => [
-                    "move_log" => [
-                        "cooldown" => (object)[],
-                        "count" => (object)[],
-                        "cooldown_next" => ["ITEM" => 1],
-                        "last_move_type" => "ITEM"
+                    "owned_items" => [
+                        [
+                            "item_id" => "ItemMortyChip",
+                            "quantity" => $remaining
+                        ]
                     ],
                     "rewards" => [
-                        ["type"=>"MORTY"]
+                        [
+                            "type" => "MORTY",
+                            "morty_id" => $wild_morty_id,
+                            "level" => $new_morty["level"],
+                            "added_to_active_deck" => true,
+                            "owned_morty_limit_reached" => false,
+                            "variant" => "Normal",
+                            "owned_morty" => $new_morty
+                        ]
+                    ],
+                    "attacks_to_learn" => [],
+                    "move_log" => [
+                        "cooldown" => [
+                            "ATTACK" => 0,
+                            "ITEM" => 1
+                        ],
+                        "count" => [
+                            "ATTACK" => 1,
+                            "ITEM" => 1
+                        ],
+                        "cooldown_next" => [
+                            "ITEM" => 2
+                        ],
+                        "last_move_type" => "ITEM"
                     ]
                 ],
                 "opponent" => (object)[]
@@ -115,7 +192,7 @@ if ($type === "ITEM" && $move_id === "ItemMortyChip") {
         ], $player_id);
 
         echo json_encode(["success" => true]);
-        exit;
+        //exit;
     }
 }
 
@@ -227,13 +304,12 @@ publish_event($pdo, $room_id, "battle:turn-result", [
 ], $player_id);
 
 // ========================
-// NEXT TURN TIMER
+// IF RUN
 // ========================
-if ($outcome === "CONTINUE") {
-    publish_event($pdo, $room_id, "battle:move-timer-started", [
-        "battle_id" => $battle_id,
-        "timeout" => 30
-    ], $player_id);
+if ($outcome === "RUN") {
+$wild_morty_id = $battle["opponent_active_morty"];
+publish_event($pdo, $room_id, "room:wild-morty-state-changed", ["wild_morty_id"=>$wild_morty_id,"state"=>"WORLD"]);
+publish_event($pdo, $room_id, "room:user-state-changed", ["player_id"=>$player_id,"state"=>"WORLD"]);
 }
 
 // ========================
@@ -244,6 +320,40 @@ $wild_morty_id = $battle["opponent_active_morty"];
 publish_event($pdo, $room_id, "room:wild-morty-state-changed", ["wild_morty_id"=>$wild_morty_id,"state"=>"WORLD"]);
 publish_event($pdo, $room_id, "room:user-state-changed", ["player_id"=>$player_id,"state"=>"WORLD"]);
 }
+
+// ========================
+// IF WIN
+// ========================
+if ($outcome === "WIN") {
+$wild_morty_id = $battle["opponent_active_morty"];
+//publish_event($pdo, $room_id, "room:wild-morty-removed", ["wild_morty_id"=>$wild_morty_id);
+// for now
+publish_event($pdo, $room_id, "room:wild-morty-state-changed", ["wild_morty_id"=>$wild_morty_id,"state"=>"WORLD"]);
+publish_event($pdo, $room_id, "room:user-state-changed", ["player_id"=>$player_id,"state"=>"WORLD"]);
+}
+
+// ========================
+// IF CAUGHT
+// ========================
+if ($outcome === "CAUGHT") {
+$wild_morty_id = $battle["opponent_active_morty"];
+//publish_event($pdo, $room_id, "room:wild-morty-removed", ["wild_morty_id"=>$wild_morty_id);
+// for now
+publish_event($pdo, $room_id, "room:wild-morty-state-changed", ["wild_morty_id"=>$wild_morty_id,"state"=>"WORLD"]);
+publish_event($pdo, $room_id, "room:user-state-changed", ["player_id"=>$player_id,"state"=>"WORLD"]);
+}
+
+// ========================
+// NEXT TURN TIMER
+// ========================
+/*
+if ($outcome === "CONTINUE") {
+    publish_event($pdo, $room_id, "battle:move-timer-started", [
+        "battle_id" => $battle_id,
+        "timeout" => 30
+    ], $player_id);
+}
+*/
 
 // ========================
 // FINAL RESPONSE (IMPORTANT)

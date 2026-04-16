@@ -11,6 +11,17 @@ $data = json_decode($input, true);
 $secret = $data['secret'];
 $consent_identifier = $data['consent_identifier'];
 
+if($secret !== '4f0b1131-08d0-449c-9f6e-c70241b8cb70'){
+http_response_code(400);
+$error = json_encode([
+    "error" => [
+        "code" => "MAINTENANCE"
+    ]
+], JSON_UNESCAPED_SLASHES);
+echo $error;
+exit;
+}
+
 require '../../pocket_f4894h398r8h9w9er8he98he.php';
 
 function uuidv4() {

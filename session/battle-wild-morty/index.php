@@ -107,7 +107,6 @@ function get_wild_morty_payload(PDO $pdo, string $room_id, string $wild_morty_id
 
 $wildPayload = get_wild_morty_payload($pdo, $room_id, $wild_morty_id);
 $wildMortyId = $wildPayload["morty_id"] ?? "MortyFaceHoleSummer";
-$opponentHP = rand(100, 160);
 
 // ------------------------
 // Load player and active deck
@@ -264,11 +263,16 @@ $playerPayload = [
 
 $wild_owned_PlayerId = uuidv4();
 
+// Make it based on player level
+$opponentHP = rand(20, 20);
+$level = 5;
+$xp = 1000;
+
 $opponentPayload = [
     "player_id"=>$wild_owned_PlayerId,
     "username"=>"AWILDMORTY",
     "player_avatar_id"=>"NOAVATAR",
-    "owned_morties"=>[["owned_morty_id"=>$wild_morty_id,"morty_id"=>$wildMortyId,"level"=>37,"xp"=>50653,"hp"=>$opponentHP,"variant"=>$wildPayload["variant"]??"Normal","hp_stat"=>$opponentHP]],
+    "owned_morties"=>[["owned_morty_id"=>$wild_morty_id,"morty_id"=>$wildMortyId,"level"=>$level,"xp"=>$xp,"hp"=>$opponentHP,"variant"=>$wildPayload["variant"]??"Normal","hp_stat"=>$opponentHP]],
     "streak"=>0,
     "shiny_if_potion"=>to_bool($wildPayload["shiny_if_potion"]??false),
     "_meta"=>["isPlayerInDB"=>false,"isControlledByAI"=>true,"isRaidBoss"=>false],

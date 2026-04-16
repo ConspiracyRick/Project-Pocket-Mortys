@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">Pocket Mortys – Public Server</h1>
+  <h1 align="center">Project Pocket Mortys</h1>
   <p align="center">
     Community-maintained backend server for Pocket Mortys
   </p>
@@ -19,21 +19,6 @@
 An independent, community-maintained server implementation for **Pocket Mortys**, designed to preserve online functionality and enable continued gameplay through a custom backend infrastructure.
 
 This repository contains the server-side components required to support client authentication, persistent player data storage, and core gameplay interactions.
-
-Early adopters should expect:
-- Incomplete features
-- Occasional data resets
-- Rapid iteration cycles
-
-## Features
-
-- Custom backend compatible with the Pocket Mortys client
-- User registration and authentication
-- Persistent player data storage
-- Session and room management
-- Battle and world routing
-- Real-time event streaming (Server-Sent Events)
-- Modular API structure for future expansion
 
 ## Requirements
 - PHP 8.x
