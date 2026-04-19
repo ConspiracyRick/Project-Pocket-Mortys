@@ -7,11 +7,11 @@
 
 <p align="center">
   <a href="https://github.com/ConspiracyRick/Pocket-Mortys-Public-Server/releases">
-    <img src="https://img.shields.io/github/v/release/ConspiracyRick/Pocket-Mortys-Public-Server?style=for-the-badge&amp;logo=github" />
+    <img src="https://img.shields.io/badge/Version-2.41.0-blue?style=for-the-badge" />
   </a>
-  <img src="https://img.shields.io/badge/status-active%20development-blue?style=for-the-badge&amp;logo=github" />
+  <img src="https://img.shields.io/badge/status-online-brightgreen?style=for-the-badge&logo=server&logoColor=white" />
   <img src="https://img.shields.io/badge/php-8.x-777bb4?style=for-the-badge&amp;logo=github" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge&amp;logo=github" />
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge&amp;logo=github" />
 </p>
 
 ## Overview
@@ -76,5 +76,5 @@ This project is licensed under the MIT License.
 If you use this code in another project, server, or fork,
 you **must credit**:
 
-**Ricky Hill – Pocket Mortys Public Server**
-https://github.com/ConspiracyRick/Pocket-Mortys-Public-Server
+**ConspiracyRick – Project Pocket Mortys**
+https://github.com/ConspiracyRick/Project-Pocket-Mortys
